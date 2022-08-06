@@ -21,3 +21,9 @@ int main(int argc, const char *const argv[])
     }
     return utest_main(argc, argv);
 }
+
+UTEST(main, Makefile)
+{
+    // strdup("Hello World");
+    // ASSERT_EQ(1, 2);
+}

@@ -6,12 +6,14 @@ APP_NAME := $(BUILD_DIR)/run.exe
 SRC_SOURCES := $(shell find $(SRC_DIR) -type f -name '*.c')
 SRC_OBJECTS := $(patsubst %.c, $(BUILD_DIR)/%.o, $(SRC_SOURCES))
 
+all: $(APP_NAME)
+
 test: $(APP_NAME)
 	./$(APP_NAME) $(args)
 
 memory: $(APP_NAME)
 	valgrind --leak-check=full --show-leak-kinds=all --track-origins=yes --verbose \
-			--log-file=valgrind.log --trace-children=yes \
+			--trace-children=yes --error-exitcode=1 \
 			./$(APP_NAME) $(args)
 
 clean:
