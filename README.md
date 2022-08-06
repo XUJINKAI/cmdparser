@@ -1,5 +1,7 @@
 # cmdparser
 
+![](https://github.com/XUJINKAI/cmdparser/actions/workflows/test.yml/badge.svg)
+
 Command parser library, with highly customizable.
 
 命令行参数解析库，支持子命令嵌套，支持自定义错误语言，以及更多可定制化内容。
@@ -10,7 +12,9 @@ Command parser library, with highly customizable.
 
 - Short option (`-a`) and long options (`--all`)
 
-- Short option `-a -b -u URL` can be shorten to  `-abu URL` (`-uab URL` as well)
+- Short option `-a -b -n XJK` can be shorten to `-abn XJK` (`-nab XJK` as well)
+
+- Long option `--name=XJK` can be write as `--name XJK`
 
 - Nested sub-commands
 
