@@ -13,7 +13,7 @@ jobs:
 
     steps:
     - uses: actions/checkout@v3
-    - name: isntall valgrind
-      run: sudo apt update && apt install -y valgrind
+    - name: install valgrind
+      run: sudo apt install -y valgrind
     - name: make test
       run: make test
