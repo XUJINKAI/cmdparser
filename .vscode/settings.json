@@ -1,0 +1,9 @@
+{
+    "editor.formatOnSave": true,
+    "C_Cpp.default.includePath": [
+        "./",
+    ],
+    "files.associations": {
+        "*.h": "c"
+    }
+}

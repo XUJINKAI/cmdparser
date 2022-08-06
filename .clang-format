@@ -1,0 +1,21 @@
+# INSTALL:
+# sudo apt install -y clang-format-9
+# sudo ln -s /usr/bin/clang-format-9 /usr/bin/clang-format
+#
+# HELP:
+# https://releases.llvm.org/9.0.0/tools/clang/docs/ClangFormatStyleOptions.html
+#
+
+BasedOnStyle: Microsoft
+
+IndentWidth: 4
+IndentCaseLabels: true
+
+MaxEmptyLinesToKeep: 2
+
+BreakStringLiterals: false
+ReflowComments: false
+AllowShortFunctionsOnASingleLine: Empty
+
+AlignConsecutiveMacros: true
+AlignConsecutiveAssignments: true
