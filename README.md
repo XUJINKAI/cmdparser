@@ -42,7 +42,7 @@ static cmdp_command_st cmdp = {
         {'i', "Int", "Input Int Option", CMDP_TYPE_INT4, &arg.i},
         {0},                        // ends with {0}
     },
-    .fn_action = callback,          // called after options parsed
+    .fn_process = callback,         // called after options parsed
 };
 
 int main(int argc, char **argv)
@@ -62,7 +62,7 @@ static cmdp_command_st cmdp = {
         {
             .name = "sub",
             .options = {...},
-            .fn_action = sub_callback,
+            .fn_process = sub_callback,
         },
         {0},                        // ends with {0}
     },

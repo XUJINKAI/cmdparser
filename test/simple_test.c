@@ -11,10 +11,10 @@ static struct
     int age;
     double height;
     char *address;
-} g_arg = {0}, _g_arg_zero = {0};
+} g_arg = {0};
 
-static void g_before(int argc, char **argv, cmdp_command_st *self);
-static cmdp_action_t g_action(int argc, char **argv);
+static void g_before(cmdp_before_param_st *params);
+static cmdp_action_t g_process(cmdp_process_param_st *params);
 
 static cmdp_command_st g_command = {
     .doc = "Student struct.\n\n",
@@ -27,8 +27,8 @@ static cmdp_command_st g_command = {
             {'d', NULL, "Input Address", CMDP_TYPE_STRING_PTR, &g_arg.address, "<ADDRESS>"},
             {0},
         },
-    .fn_before = g_before,
-    .fn_action = g_action,
+    .fn_before  = g_before,
+    .fn_process = g_process,
 };
 
 static char *g_expect_help = "Student struct.\n\n"
@@ -38,11 +38,11 @@ static char *g_expect_help = "Student struct.\n\n"
                              "  --height=<HEIGHT>          Input Height\n"
                              "  -d <ADDRESS>               Input Address\n";
 
-static void g_before(int argc, char **argv, cmdp_command_st *self)
+static void g_before(cmdp_before_param_st *params)
 {
     memset(&g_arg, 0, sizeof(g_arg));
 }
-static cmdp_action_t g_action(int argc, char **argv)
+static cmdp_action_t g_process(cmdp_process_param_st *params)
 {
     LOG_INFO("name: %s\n", g_arg.name);
     LOG_INFO("is_student: %d\n", g_arg.is_student);
@@ -50,11 +50,11 @@ static cmdp_action_t g_action(int argc, char **argv)
     LOG_INFO("height: %f\n", g_arg.height);
     LOG_INFO("address: %s\n", g_arg.address);
 
-    if (memcmp(&g_arg, &_g_arg_zero, sizeof(_g_arg_zero)) != 0)
+    if (params->opts != 0)
     {
         return CMDP_ACT_OVER;
     }
-    if (argc == 0)
+    if (params->argc == 0)
     {
         return CMDP_ACT_SHOW_HELP;
     }

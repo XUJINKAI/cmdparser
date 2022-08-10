@@ -50,6 +50,28 @@ typedef enum cmdp_type_t
 typedef struct cmdp_option_st cmdp_option_st;
 typedef struct cmdp_command_st cmdp_command_st;
 
+typedef struct cmdp_before_param_st
+{
+    int argc;
+    char **argv;
+    cmdp_command_st *cmdp;
+} cmdp_before_param_st;
+
+typedef struct cmdp_process_param_st
+{
+    int argc;
+    char **argv;
+    cmdp_command_st *cmdp;
+    int opts; // parsed options count
+} cmdp_process_param_st;
+
+/* 
+callback function procedure:
+    - global_before
+    - before
+    - process
+    - global_after
+ */
 struct cmdp_command_st
 {
     /* (sub) command's name */
@@ -65,9 +87,9 @@ struct cmdp_command_st
     cmdp_command_st *sub_commands;
 
     // run before command's options parse
-    void (*fn_before)(int argc, char **argv, cmdp_command_st *self);
+    void (*fn_before)(cmdp_before_param_st *params);
     // run after command's options parse, before sub-commands run
-    cmdp_action_t (*fn_action)(int argc, char **argv);
+    cmdp_action_t (*fn_process)(cmdp_process_param_st *params);
 
     // hide or disable
     cmdp_flag_t (*fn_flag)(cmdp_command_st *self);
@@ -123,7 +145,7 @@ typedef struct cmdp_global_config_st
     char help_short_option;
     char *help_long_option;
 
-    void (*fn_global_before)(int argc, char **argv, cmdp_command_st *self);
+    void (*fn_global_before)(cmdp_before_param_st *params);
 
     void (*fn_doc_gen_options)(FILE *fp, cmdp_option_st *options);
     void (*fn_doc_gen_command)(FILE *fp, cmdp_command_st *command);

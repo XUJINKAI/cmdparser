@@ -1,7 +1,7 @@
 #include "cmdparser.h"
 #include <string.h>
 
-static cmdp_action_t callback_function(int argc, char **argv);
+static cmdp_action_t callback_function(cmdp_process_param_st *params);
 
 static struct
 {
@@ -9,7 +9,7 @@ static struct
     int i;
     double d;
     char *s;
-} arg = {0}, zeroarg = {0};
+} arg = {0};
 
 
 static cmdp_command_st g_command = {
@@ -24,7 +24,7 @@ static cmdp_command_st g_command = {
             {'s', "String", "Input String Option", CMDP_TYPE_STRING_PTR, &arg.s, .type_name = "<ANY>"},
             {0},
         },
-    .fn_action = callback_function,
+    .fn_process = callback_function,
 };
 
 
@@ -34,9 +34,9 @@ int main(int argc, char **argv)
 }
 
 
-static cmdp_action_t callback_function(int argc, char **argv)
+static cmdp_action_t callback_function(cmdp_process_param_st *params)
 {
-    if (argc == 0 && memcmp(&arg, &zeroarg, sizeof(arg)) == 0)
+    if (params->opts == 0)
     {
         return CMDP_ACT_SHOW_HELP;
     }
@@ -45,9 +45,9 @@ static cmdp_action_t callback_function(int argc, char **argv)
            "double: %f\n"
            "string: %s\n",
            arg.b ? "true" : "false", arg.i, arg.d, arg.s);
-    for(int i = 0; i < argc; i++)
+    for (int i = 0; i < params->argc; i++)
     {
-        printf("argv[%d]: %s\n", i, argv[i]);
+        printf("argv[%d]: %s\n", i, params->argv[i]);
     }
     return CMDP_ACT_OVER;
 }

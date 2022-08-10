@@ -449,21 +449,27 @@ static EVAL_CODE eval_option_output(cmdp_option_st *option, char *arg)
 
 static cmdp_result_t cmdp_run_recursive(int argc, char **argv, cmdp_command_st *cmdp, int recursive)
 {
+    cmdp_before_param_st fn_before_param = {
+        .argc = argc,
+        .argv = argv,
+        .cmdp = cmdp,
+    };
     if (g_config.fn_global_before)
     {
-        g_config.fn_global_before(argc, argv, cmdp);
+        g_config.fn_global_before(&fn_before_param);
     }
     if (cmdp->fn_before)
     {
-        cmdp->fn_before(argc, argv, cmdp);
+        cmdp->fn_before(&fn_before_param);
     }
-    if (argc == 0 && cmdp->fn_action == NULL)
+    if (argc == 0 && cmdp->fn_process == NULL)
     {
         cmdp_help(cmdp);
         return CMDP_OK;
     }
 
-    int arg_index = 0;
+    int parsed_options = 0;
+    int arg_index      = 0;
     for (; arg_index < argc; arg_index++)
     {
         char *cur_arg     = argv[arg_index];
@@ -517,6 +523,7 @@ static cmdp_result_t cmdp_run_recursive(int argc, char **argv, cmdp_command_st *
                 case EVAL_CODE_DONE:
                     break;
             }
+            parsed_options += 1;
         }
         // --long
         else if (cur_len >= 3 && cur_arg[0] == '-' && cur_arg[1] == '-')
@@ -565,6 +572,7 @@ static cmdp_result_t cmdp_run_recursive(int argc, char **argv, cmdp_command_st *
                 case EVAL_CODE_DONE:
                     break;
             }
+            parsed_options += 1;
         }
         else
         {
@@ -573,21 +581,35 @@ static cmdp_result_t cmdp_run_recursive(int argc, char **argv, cmdp_command_st *
         }
     }
 
-    if (cmdp->fn_action != NULL)
+    if (cmdp->fn_process != NULL)
     {
-        cmdp_action_t code = cmdp->fn_action(argc - arg_index, argv + arg_index);
-        if (HAS_FLAG(code, CMDP_ACT_SHOW_HELP))
-        {
-            cmdp_help(cmdp);
-        }
-        code &= 0xFFFF;
-        switch (code)
+        cmdp_process_param_st fn_process_param = {
+            .argc = argc - arg_index,
+            .argv = argv + arg_index,
+            .cmdp = cmdp,
+            .opts = parsed_options,
+        };
+        cmdp_action_t code = cmdp->fn_process(&fn_process_param);
+        bool show_help     = HAS_FLAG(code, CMDP_ACT_SHOW_HELP);
+        switch (code & 0xFFFF)
         {
             case CMDP_ACT_OVER:
+                if (show_help)
+                {
+                    cmdp_fprint_command_doc(OUT_STREAM, cmdp);
+                }
                 return CMDP_OK;
             case CMDP_ACT_FAIL:
+                if (show_help)
+                {
+                    cmdp_fprint_command_doc(ERR_STREAM, cmdp);
+                }
                 return CMDP_FAIL;
             case CMDP_ACT_CONTINUE:
+                if (show_help)
+                {
+                    cmdp_fprint_command_doc(OUT_STREAM, cmdp);
+                }
             default:
                 break;
         }

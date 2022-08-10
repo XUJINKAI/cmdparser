@@ -1,8 +1,8 @@
 #include "cmdparser.h"
 
-static cmdp_action_t cb_top_level(int argc, char **argv);
-static cmdp_action_t cb_clone(int argc, char **argv);
-static cmdp_action_t cb_pull(int argc, char **argv);
+static cmdp_action_t cb_top_level(cmdp_process_param_st *params);
+static cmdp_action_t cb_clone(cmdp_process_param_st *params);
+static cmdp_action_t cb_pull(cmdp_process_param_st *params);
 
 struct
 {
@@ -48,7 +48,7 @@ static cmdp_command_st cmdp_top = {
                      &arg_clone.origin, "<name>"},
                     {0},
                 },
-                .fn_action = cb_clone,
+                .fn_process = cb_clone,
             },
             {
                 .doc = "\n"
@@ -58,7 +58,7 @@ static cmdp_command_st cmdp_top = {
                 "pull",
                 "Fetch from and integrate with another repository or a local branch",
                 "usage: git pull\n\n",
-                .fn_action = cb_pull,
+                .fn_process = cb_pull,
             },
             {
                 .doc = "\n"
@@ -67,7 +67,7 @@ static cmdp_command_st cmdp_top = {
             },
             {0},
         },
-    .fn_action = cb_top_level,
+    .fn_process = cb_top_level,
 };
 
 int main(int argc, char **argv)
@@ -75,44 +75,44 @@ int main(int argc, char **argv)
     return cmdp_run(argc - 1, argv + 1, &cmdp_top);
 }
 
-static cmdp_action_t cb_top_level(int argc, char **argv)
+static cmdp_action_t cb_top_level(cmdp_process_param_st *params)
 {
     if (arg_top.version)
     {
         printf("git version cmdparser by XUJINKAI\n");
         return CMDP_ACT_OVER;
     }
-    else if (argc == 0)
+    else if (params->argc == 0)
     {
         return CMDP_ACT_SHOW_HELP;
     }
     return CMDP_ACT_CONTINUE;
 }
 
-static cmdp_action_t cb_clone(int argc, char **argv)
+static cmdp_action_t cb_clone(cmdp_process_param_st *params)
 {
-    if (argc == 0)
+    if (params->argc == 0)
     {
-        printf("fatal: You must specify a repository to clone.\n\n");
+        fprintf(stderr, "fatal: You must specify a repository to clone.\n\n");
         return CMDP_ACT_FAIL | CMDP_ACT_SHOW_HELP;
     }
 
     char *repo = NULL;
     char *dir  = NULL;
 
-    if (argc == 1)
+    if (params->argc == 1)
     {
-        repo = argv[0];
+        repo = params->argv[0];
         dir  = ".";
     }
-    else if (argc == 2)
+    else if (params->argc == 2)
     {
-        repo = argv[0];
-        dir  = argv[1];
+        repo = params->argv[0];
+        dir  = params->argv[1];
     }
     else
     {
-        printf("fatal: too many arguments\n\n");
+        fprintf(stderr, "fatal: too many arguments\n\n");
         return CMDP_ACT_FAIL | CMDP_ACT_SHOW_HELP;
     }
 
@@ -125,7 +125,7 @@ static cmdp_action_t cb_clone(int argc, char **argv)
     return CMDP_ACT_OVER;
 }
 
-static cmdp_action_t cb_pull(int argc, char **argv)
+static cmdp_action_t cb_pull(cmdp_process_param_st *params)
 {
     printf("cb_pull called.\n");
     return CMDP_ACT_OVER;
