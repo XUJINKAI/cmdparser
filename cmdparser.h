@@ -7,6 +7,12 @@ LICENSE: MIT
 #ifndef __CMD_PARSER_H__
 #define __CMD_PARSER_H__
 
+#if defined(__cplusplus)
+#define CMDP_EXTERN extern "C"
+#else
+#define CMDP_EXTERN extern
+#endif
+
 #include <stdbool.h>
 #include <stdio.h>
 
@@ -112,14 +118,14 @@ struct cmdp_option_st
 };
 
 #define CMDP_HIDE .fn_flag = cmdp_flag_always_hide
-cmdp_flag_t cmdp_flag_always_hide(cmdp_option_st *self);
+CMDP_EXTERN cmdp_flag_t cmdp_flag_always_hide(cmdp_option_st *self);
 
-void cmdp_fprint_options_doc(FILE *fp, cmdp_option_st *options);
-void cmdp_fprint_command_doc(FILE *fp, cmdp_command_st *command);
-void cmdp_fprint_all_documents(FILE *fp, cmdp_command_st *command);
+CMDP_EXTERN void cmdp_fprint_options_doc(FILE *fp, cmdp_option_st *options);
+CMDP_EXTERN void cmdp_fprint_command_doc(FILE *fp, cmdp_command_st *command);
+CMDP_EXTERN void cmdp_fprint_all_documents(FILE *fp, cmdp_command_st *command);
 
 // print help message to output stream
-void cmdp_help(cmdp_command_st *command);
+CMDP_EXTERN void cmdp_help(cmdp_command_st *command);
 
 /* 
 run arguments with a cmdp_command_st
@@ -129,7 +135,7 @@ int main(int argc, char**argv) {
     return cmdp_run(argc - 1, argv + 1, &root_command);
 }
  */
-cmdp_result_t cmdp_run(int argc, char **argv, cmdp_command_st *root_command);
+CMDP_EXTERN cmdp_result_t cmdp_run(int argc, char **argv, cmdp_command_st *root_command);
 
 
 // ===================
@@ -156,7 +162,7 @@ typedef struct cmdp_global_config_st
     FILE *err_stream;
 } cmdp_global_config_st;
 
-cmdp_global_config_st *cmdp_get_global_config();
-void cmdp_reset_global_config();
+CMDP_EXTERN cmdp_global_config_st *cmdp_get_global_config();
+CMDP_EXTERN void cmdp_reset_global_config();
 
 #endif /* __CMD_PARSER_H__ */

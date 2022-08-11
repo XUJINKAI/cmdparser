@@ -1,4 +1,4 @@
-all: cmdparser.o
+all: build
 	$(MAKE) -C test
 	$(MAKE) -C demo_simple
 	$(MAKE) -C demo_git
@@ -13,7 +13,8 @@ clean:
 	$(MAKE) clean -C demo_simple
 	$(MAKE) clean -C demo_git
 
-cmdparser.o: cmdparser.c
-	gcc -Wall -Wextra -std=gnu99 -c -o $@ $^
+build:
+	gcc -Wall -Wextra -Werror -std=gnu99 -c -o cmdparser.o cmdparser.c
+	g++ -Wall -Wextra -Werror -std=c++11 -c -o cmdparser.o cmdparser.c -Wno-missing-field-initializers
 
 .PHONY : all test clean

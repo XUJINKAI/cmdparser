@@ -2,7 +2,7 @@
 
 ![](https://github.com/XUJINKAI/cmdparser/actions/workflows/test.yml/badge.svg)
 
-Command parser library, with highly customizable.
+Command parser library (C/C++), with highly customizable.
 
 命令行参数解析库，支持子命令嵌套，支持自定义错误语言，以及更多可定制化内容。
 

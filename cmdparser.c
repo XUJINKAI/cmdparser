@@ -49,14 +49,14 @@ static int nonzero_countof(void *array, int element_size)
 
 static cmdp_global_config_st g_config = {
     .help_short_option = 'h',
-    .help_long_option  = "help",
+    .help_long_option  = (char *)"help",
 };
 
 static void reset_global_config()
 {
     memset(&g_config, 0, sizeof(g_config));
     g_config.help_short_option = 'h';
-    g_config.help_long_option  = "help";
+    g_config.help_long_option  = (char *)"help";
 }
 
 #define OUT_STREAM (g_config.out_stream != NULL ? g_config.out_stream : stdout)
@@ -180,13 +180,13 @@ static void doc_gen_options(FILE *fp, cmdp_option_st *options)
             switch (n->type)
             {
                 case CMDP_TYPE_STRING_PTR:
-                    alias = "<string>";
+                    alias = (char *)"<string>";
                     break;
                 case CMDP_TYPE_INT4:
-                    alias = "<int>";
+                    alias = (char *)"<int>";
                     break;
                 case CMDP_TYPE_DOUBLE:
-                    alias = "<number>";
+                    alias = (char *)"<number>";
                     break;
                 case CMDP_TYPE_NONE:
                 case CMDP_TYPE_BOOL:
@@ -388,14 +388,15 @@ static EVAL_CODE eval_option_output(cmdp_option_st *option, char *arg)
 {
     switch (option->type)
     {
-        case CMDP_TYPE_BOOL:
+        case CMDP_TYPE_BOOL: {
             if (option->output_ptr != NULL)
             {
                 *(bool *)option->output_ptr = true;
             }
             return EVAL_CODE_DONE;
+        }
 
-        case CMDP_TYPE_INT4:
+        case CMDP_TYPE_INT4: {
             if (arg == NULL)
             {
                 return EVAL_CODE_ERROR_ARG_NULL;
@@ -411,8 +412,9 @@ static EVAL_CODE eval_option_output(cmdp_option_st *option, char *arg)
                 *(int *)option->output_ptr = l;
             }
             return EVAL_CODE_ARG_USED;
+        }
 
-        case CMDP_TYPE_DOUBLE:
+        case CMDP_TYPE_DOUBLE: {
             if (arg == NULL)
             {
                 return EVAL_CODE_ERROR_ARG_NULL;
@@ -428,8 +430,9 @@ static EVAL_CODE eval_option_output(cmdp_option_st *option, char *arg)
                 *(double *)option->output_ptr = d;
             }
             return EVAL_CODE_ARG_USED;
+        }
 
-        case CMDP_TYPE_STRING_PTR:
+        case CMDP_TYPE_STRING_PTR: {
             if (arg == NULL)
             {
                 return EVAL_CODE_ERROR_ARG_NULL;
@@ -439,12 +442,13 @@ static EVAL_CODE eval_option_output(cmdp_option_st *option, char *arg)
                 *(char **)option->output_ptr = arg;
             }
             return EVAL_CODE_ARG_USED;
+        }
 
         case CMDP_TYPE_NONE:
         default:
-            return 0;
+            return EVAL_CODE_DONE;
     }
-    return 0;
+    return EVAL_CODE_DONE;
 }
 
 static cmdp_result_t cmdp_run_recursive(int argc, char **argv, cmdp_command_st *cmdp, int recursive)
@@ -649,7 +653,9 @@ void cmdp_fprint_command_doc(FILE *fp, cmdp_command_st *command)
 }
 void cmdp_fprint_all_documents(FILE *fp, cmdp_command_st *command)
 {
-    cmdp_fprint_all_documents_recursive(fp, command, command->name ? command->name : "", isatty(fileno(fp)));
+    char *cmd_name = command->name ? command->name : (char *)"";
+    bool fp_istty  = isatty(fileno(fp));
+    cmdp_fprint_all_documents_recursive(fp, command, cmd_name, fp_istty);
 }
 
 void cmdp_help(cmdp_command_st *command)
