@@ -26,9 +26,9 @@ Command parser library, with highly customizable.
 
 ## Examples
 
-[demo_simple](demo_simple) is an basic demo about parse options.
+[demo_simple](demo_simple/main.c) is an basic demo about parse options.
 
-[demo_git](demo_git) follows git commands demos how to handle complex sub-commands/options.
+[demo_git](demo_git/main.c) follows git commands demos how to handle complex sub-commands/options.
 
 [test](test) Unit Tests covers most features.
 
@@ -55,7 +55,7 @@ int main(int argc, char **argv)
 
 ### Nested Sub-commands
 
-Set `sub_commands` filed, nested can be infinite.
+Set `sub_commands` field, nested can be infinite.
 
 ```c
 static cmdp_command_st cmdp = {
