@@ -4,6 +4,11 @@
 UTEST_STATE();
 bool g_log_switch = false;
 
+/* 
+make test args="--log --filter=*.*"
+make memory args="--log --filter=*.*"
+ */
+
 int main(int argc, const char *const argv[])
 {
     if (argc > 1)

@@ -1,9 +1,5 @@
 #include "common.h"
 
-/* 
-make memory args="--filter=chinese.*"
- */
-
 static cmdp_command_st g_command = {
     .doc = "中文测试\n\n",
     .options =
@@ -34,99 +30,73 @@ static char *g_expect_help = "中文测试\n"
                              "  exit                       退出\n";
 
 void cmdp_configure_chinese();
+#define __START()                                                                                                      \
+    cmdp_configure_chinese();                                                                                          \
+    START_CMD();
+#define __END()                                                                                                        \
+    END_CMD();                                                                                                         \
+    cmdp_reset_global_config();
 
 UTEST(chinese, doc)
 {
-    cmdp_configure_chinese();
-    START_CMD();
+    __START();
     RUN_CMD(&g_command, );
-    EXPECT_STREQ(g_expect_help, r_out);
-    EXPECT_STREQ("", r_err);
-    EXPECT_EQ(0, r_code);
-    END_CMD();
-    cmdp_reset_global_config();
+    EXPECT_CMD(CMDP_OK, g_expect_help, "");
+    __END();
 }
 
 UTEST(chinese, error_unknown_command)
 {
-    cmdp_configure_chinese();
-    START_CMD();
+    __START();
     RUN_CMD(&g_command, "unknown");
-    EXPECT_STREQ("", r_out);
-    EXPECT_STREQ("未知命令: unknown.\n", r_err);
-    EXPECT_NE(0, r_code);
-    END_CMD();
-    cmdp_reset_global_config();
+    EXPECT_CMD(CMDP_FAIL, "", "未知命令: unknown.\n");
+    __END();
 }
 
 UTEST(chinese, error_unknown_short_opt)
 {
-    cmdp_configure_chinese();
-    START_CMD();
+    __START();
     RUN_CMD(&g_command, "-u");
-    EXPECT_STREQ("", r_out);
-    EXPECT_STREQ("未知选项: -u.\n", r_err);
-    EXPECT_NE(0, r_code);
-    END_CMD();
-    cmdp_reset_global_config();
+    EXPECT_CMD(CMDP_FAIL, "", "未知选项: -u.\n");
+    __END();
 }
 
 UTEST(chinese, error_unknown_long_opt)
 {
-    cmdp_configure_chinese();
-    START_CMD();
+    __START();
     RUN_CMD(&g_command, "--unknown");
-    EXPECT_STREQ("", r_out);
-    EXPECT_STREQ("未知选项: --unknown.\n", r_err);
-    EXPECT_NE(0, r_code);
-    END_CMD();
-    cmdp_reset_global_config();
+    EXPECT_CMD(CMDP_FAIL, "", "未知选项: --unknown.\n");
+    __END();
 }
 
 UTEST(chinese, error_require_arg_short)
 {
-    cmdp_configure_chinese();
-    START_CMD();
+    __START();
     RUN_CMD(&g_command, "-n");
-    EXPECT_STREQ("", r_out);
-    EXPECT_STREQ("选项-n需要参数.\n", r_err);
-    EXPECT_NE(0, r_code);
-    END_CMD();
-    cmdp_reset_global_config();
+    EXPECT_CMD(CMDP_FAIL, "", "选项-n需要参数.\n");
+    __END();
 }
 
 UTEST(chinese, error_require_arg_long)
 {
-    cmdp_configure_chinese();
-    START_CMD();
+    __START();
     RUN_CMD(&g_command, "--name");
-    EXPECT_STREQ("", r_out);
-    EXPECT_STREQ("选项--name需要参数.\n", r_err);
-    EXPECT_NE(0, r_code);
-    END_CMD();
-    cmdp_reset_global_config();
+    EXPECT_CMD(CMDP_FAIL, "", "选项--name需要参数.\n");
+    __END();
 }
 
 UTEST(chinese, error_parse_int)
 {
-    cmdp_configure_chinese();
-    START_CMD();
+    __START();
     RUN_CMD(&g_command, "--age", "1.234");
-    EXPECT_STREQ("", r_out);
-    EXPECT_STREQ("解析整数失败: 1.234.\n", r_err);
-    EXPECT_NE(0, r_code);
-    END_CMD();
-    cmdp_reset_global_config();
+    EXPECT_CMD(CMDP_FAIL, "", "解析整数失败: 1.234.\n");
+    __END();
 }
 
 UTEST(chinese, error_parse_float)
 {
-    cmdp_configure_chinese();
-    START_CMD();
+    __START();
     RUN_CMD(&g_command, "--height", "1.234a");
-    EXPECT_STREQ("", r_out);
-    EXPECT_STREQ("解析数字失败: 1.234a.\n", r_err);
-    EXPECT_NE(0, r_code);
-    END_CMD();
-    cmdp_reset_global_config();
+    EXPECT_CMD(CMDP_FAIL, "", "解析数字失败: 1.234a.\n");
+    __END();
 }

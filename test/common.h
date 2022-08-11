@@ -36,9 +36,14 @@ extern bool g_log_switch;
     r_code                           = cmdp_run(countof(COMBINE(_arg_, __LINE__)), COMBINE(_arg_, __LINE__), ref_cmdp); \
     fflush(out_stream);                                                                                                 \
     fflush(err_stream);                                                                                                 \
-    LOG_INFO("%s: %d\n", DIM("r_code"), r_code);                                                                        \
-    LOG_INFO("%s:\n%s\n", DIM("r_out"), r_out);                                                                         \
-    LOG_INFO("%s:\n%s\n", DIM("r_err"), r_err);
+    LOG_INFO("%s %d\n", DIM("r_code:"), r_code);                                                                        \
+    LOG_INFO("%s\n%s\n", DIM("r_out:"), r_out);                                                                         \
+    LOG_INFO("%s\n%s\n", DIM("r_err:"), r_err);
+
+#define EXPECT_CMD(code, out, err)                                                                                     \
+    EXPECT_EQ(code, r_code);                                                                                           \
+    EXPECT_STREQ(out, r_out);                                                                                          \
+    EXPECT_STREQ(err, r_err);
 
 #define END_CMD()                                                                                                      \
     fclose(out_stream);                                                                                                \

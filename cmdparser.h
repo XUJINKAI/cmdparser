@@ -19,7 +19,7 @@ typedef enum cmdp_result_t
 
 typedef enum cmdp_action_t
 {
-    // continue parse sub commands
+    // continue parse sub commands (if have)
     CMDP_ACT_CONTINUE = 0,
     // stop parse sub commands, return OK
     CMDP_ACT_OVER,
@@ -55,6 +55,7 @@ typedef struct cmdp_before_param_st
     int argc;
     char **argv;
     cmdp_command_st *cmdp;
+    int sub_level; // sub-command level, 0 is main command
 } cmdp_before_param_st;
 
 typedef struct cmdp_process_param_st
@@ -62,7 +63,8 @@ typedef struct cmdp_process_param_st
     int argc;
     char **argv;
     cmdp_command_st *cmdp;
-    int opts; // parsed options count
+    int opts;      // parsed options count
+    int sub_level; // sub-command level, 0 is main command
 } cmdp_process_param_st;
 
 /* 
@@ -144,8 +146,6 @@ typedef struct cmdp_global_config_st
 {
     char help_short_option;
     char *help_long_option;
-
-    void (*fn_global_before)(cmdp_before_param_st *params);
 
     void (*fn_doc_gen_options)(FILE *fp, cmdp_option_st *options);
     void (*fn_doc_gen_command)(FILE *fp, cmdp_command_st *command);

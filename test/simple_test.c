@@ -1,9 +1,5 @@
 #include "common.h"
 
-/* 
-make memory args="--filter=simple.*"
- */
-
 static struct
 {
     char *name;
@@ -72,9 +68,7 @@ UTEST(simple, input_space)
     EXPECT_EQ(18, g_arg.age);
     EXPECT_EQ(1.8, g_arg.height);
     EXPECT_STREQ("beijing", g_arg.address);
-    EXPECT_STREQ("", r_out);
-    EXPECT_STREQ("", r_err);
-    EXPECT_EQ(0, r_code);
+    EXPECT_CMD(CMDP_OK, "", "");
     END_CMD();
 }
 
@@ -87,9 +81,7 @@ UTEST(simple, input_equal_symbol)
     EXPECT_EQ(18, g_arg.age);
     EXPECT_EQ(1.8, g_arg.height);
     EXPECT_STREQ("beijing", g_arg.address);
-    EXPECT_STREQ("", r_out);
-    EXPECT_STREQ("", r_err);
-    EXPECT_EQ(0, r_code);
+    EXPECT_CMD(CMDP_OK, "", "");
     END_CMD();
 }
 
@@ -102,9 +94,7 @@ UTEST(simple, continuous_short_opt)
     EXPECT_EQ(18, g_arg.age);
     EXPECT_EQ(0.0, g_arg.height);
     EXPECT_EQ(NULL, g_arg.address);
-    EXPECT_STREQ("", r_out);
-    EXPECT_STREQ("", r_err);
-    EXPECT_EQ(0, r_code);
+    EXPECT_CMD(CMDP_OK, "", "");
     END_CMD();
 }
 
@@ -117,9 +107,7 @@ UTEST(simple, continuous_short_opt_inverse)
     EXPECT_EQ(18, g_arg.age);
     EXPECT_EQ(0.0, g_arg.height);
     EXPECT_EQ(NULL, g_arg.address);
-    EXPECT_STREQ("", r_out);
-    EXPECT_STREQ("", r_err);
-    EXPECT_EQ(0, r_code);
+    EXPECT_CMD(CMDP_OK, "", "");
     END_CMD();
 }
 
@@ -133,9 +121,7 @@ UTEST(simple, input_x2)
     EXPECT_EQ(18, g_arg.age);
     EXPECT_EQ(1.8, g_arg.height);
     EXPECT_STREQ("beijing", g_arg.address);
-    EXPECT_STREQ("", r_out);
-    EXPECT_STREQ("", r_err);
-    EXPECT_EQ(0, r_code);
+    EXPECT_CMD(CMDP_OK, "", "");
 
     RUN_CMD(&g_command, "--height", "1.7", "-d", "shanghai");
     EXPECT_EQ(NULL, g_arg.name);
@@ -143,9 +129,7 @@ UTEST(simple, input_x2)
     EXPECT_EQ(0, g_arg.age);
     EXPECT_EQ(1.7, g_arg.height);
     EXPECT_STREQ("shanghai", g_arg.address);
-    EXPECT_STREQ("", r_out);
-    EXPECT_STREQ("", r_err);
-    EXPECT_EQ(0, r_code);
+    EXPECT_CMD(CMDP_OK, "", "");
 
     END_CMD();
 }
@@ -155,9 +139,7 @@ UTEST(simple, dash_name)
     START_CMD();
     RUN_CMD(&g_command, "--name", "--hello");
     EXPECT_STREQ("--hello", g_arg.name);
-    EXPECT_STREQ("", r_out);
-    EXPECT_STREQ("", r_err);
-    EXPECT_EQ(0, r_code);
+    EXPECT_CMD(CMDP_OK, "", "");
     END_CMD();
 }
 
@@ -167,9 +149,7 @@ UTEST(simple, unknown_short_option)
 {
     START_CMD();
     RUN_CMD(&g_command, "-u");
-    EXPECT_STREQ("", r_out);
-    EXPECT_STREQ("Unknown option -u.\n", r_err);
-    EXPECT_NE(0, r_code);
+    EXPECT_CMD(CMDP_FAIL, "", "Unknown option -u.\n");
     END_CMD();
 }
 
@@ -177,9 +157,7 @@ UTEST(simple, unknown_long_option)
 {
     START_CMD();
     RUN_CMD(&g_command, "--unknown");
-    EXPECT_STREQ("", r_out);
-    EXPECT_STREQ("Unknown option --unknown.\n", r_err);
-    EXPECT_NE(0, r_code);
+    EXPECT_CMD(CMDP_FAIL, "", "Unknown option --unknown.\n");
     END_CMD();
 }
 
@@ -187,9 +165,7 @@ UTEST(simple, require_short_arg)
 {
     START_CMD();
     RUN_CMD(&g_command, "-a");
-    EXPECT_STREQ("", r_out);
-    EXPECT_STREQ("Option -a require args.\n", r_err);
-    EXPECT_NE(0, r_code);
+    EXPECT_CMD(CMDP_FAIL, "", "Option -a require args.\n");
     END_CMD();
 }
 
@@ -197,9 +173,7 @@ UTEST(simple, require_short_arg_cont)
 {
     START_CMD();
     RUN_CMD(&g_command, "-sa");
-    EXPECT_STREQ("", r_out);
-    EXPECT_STREQ("Option -a require args.\n", r_err);
-    EXPECT_NE(0, r_code);
+    EXPECT_CMD(CMDP_FAIL, "", "Option -a require args.\n");
     END_CMD();
 }
 
@@ -207,9 +181,7 @@ UTEST(simple, require_long_arg)
 {
     START_CMD();
     RUN_CMD(&g_command, "--name");
-    EXPECT_STREQ("", r_out);
-    EXPECT_STREQ("Option --name require args.\n", r_err);
-    EXPECT_NE(0, r_code);
+    EXPECT_CMD(CMDP_FAIL, "", "Option --name require args.\n");
     END_CMD();
 }
 
@@ -217,9 +189,7 @@ UTEST(simple, parse_not_int)
 {
     START_CMD();
     RUN_CMD(&g_command, "--age", "123abc");
-    EXPECT_STREQ("", r_out);
-    EXPECT_STREQ("Parse int failed: 123abc.\n", r_err);
-    EXPECT_NE(0, r_code);
+    EXPECT_CMD(CMDP_FAIL, "", "Parse int failed: 123abc.\n");
     END_CMD();
 }
 
@@ -227,9 +197,7 @@ UTEST(simple, parse_not_float)
 {
     START_CMD();
     RUN_CMD(&g_command, "--height", "123.abc");
-    EXPECT_STREQ("", r_out);
-    EXPECT_STREQ("Parse float failed: 123.abc.\n", r_err);
-    EXPECT_NE(0, r_code);
+    EXPECT_CMD(CMDP_FAIL, "", "Parse float failed: 123.abc.\n");
     END_CMD();
 }
 
@@ -239,9 +207,7 @@ UTEST(simple, help__void)
 {
     START_CMD();
     RUN_CMD(&g_command, );
-    EXPECT_STREQ(g_expect_help, r_out);
-    EXPECT_STREQ("", r_err);
-    EXPECT_EQ(0, r_code);
+    EXPECT_CMD(CMDP_OK, g_expect_help, "");
     END_CMD();
 }
 
@@ -249,9 +215,7 @@ UTEST(simple, help__h)
 {
     START_CMD();
     RUN_CMD(&g_command, "-h");
-    EXPECT_STREQ(g_expect_help, r_out);
-    EXPECT_STREQ("", r_err);
-    EXPECT_EQ(0, r_code);
+    EXPECT_CMD(CMDP_OK, g_expect_help, "");
     END_CMD();
 }
 
@@ -259,8 +223,6 @@ UTEST(simple, help__help)
 {
     START_CMD();
     RUN_CMD(&g_command, "--help");
-    EXPECT_STREQ(g_expect_help, r_out);
-    EXPECT_STREQ("", r_err);
-    EXPECT_EQ(0, r_code);
+    EXPECT_CMD(CMDP_OK, g_expect_help, "");
     END_CMD();
 }
