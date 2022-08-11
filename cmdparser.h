@@ -67,13 +67,7 @@ typedef struct cmdp_process_param_st
     int sub_level; // sub-command level, 0 is main command
 } cmdp_process_param_st;
 
-/* 
-callback function procedure:
-    - global_before
-    - before
-    - process
-    - global_after
- */
+
 struct cmdp_command_st
 {
     /* (sub) command's name */
