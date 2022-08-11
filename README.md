@@ -30,6 +30,8 @@ Command parser library, with highly customizable.
 
 [demo_git](demo_git) follows git commands demos how to handle complex sub-commands/options.
 
+[test](test) Unit Tests covers most features.
+
 ## Document
 
 ### Get Started

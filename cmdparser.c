@@ -261,7 +261,7 @@ static void doc_gen_command(FILE *fp, cmdp_command_st *command)
                 int pos = 2;
                 if (n->alias_name != NULL)
                 {
-                    fprintf(fp, "%s, \n", n->alias_name);
+                    fprintf(fp, "%s, ", n->alias_name);
                     pos += strlen(n->alias_name) + 2;
                 }
                 fprintf(fp, "%s", n->name);
