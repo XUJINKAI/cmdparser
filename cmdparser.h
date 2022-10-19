@@ -61,7 +61,9 @@ typedef struct cmdp_before_param_st
     int argc;
     char **argv;
     cmdp_command_st *cmdp;
-    int sub_level; // sub-command level, 0 is main command
+    int sub_level;    // sub-command level, 0 is main command
+    FILE *out_stream; // output stream in global context
+    FILE *err_stream; // error stream in global context
 } cmdp_before_param_st;
 
 typedef struct cmdp_process_param_st
@@ -69,8 +71,10 @@ typedef struct cmdp_process_param_st
     int argc;
     char **argv;
     cmdp_command_st *cmdp;
-    int opts;      // parsed options count
-    int sub_level; // sub-command level, 0 is main command
+    int opts;         // parsed options count
+    int sub_level;    // sub-command level, 0 is main command
+    FILE *out_stream; // output stream in global context
+    FILE *err_stream; // error stream in global context
 } cmdp_process_param_st;
 
 

@@ -16,6 +16,8 @@ Command parser library (C/C++), with highly customizable.
 
 - Long option `--name=XJK` can be write as `--name XJK`
 
+- End of options `--` supported
+
 - Nested sub-commands
 
 - Hide/Disable options or sub-commands

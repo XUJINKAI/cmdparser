@@ -468,10 +468,12 @@ static cmdp_result_t cmdp_run_recursive(int argc, char **argv, cmdp_command_st *
     if (cmdp->fn_before)
     {
         cmdp_before_param_st fn_before_param = {
-            .argc      = argc,
-            .argv      = argv,
-            .cmdp      = cmdp,
-            .sub_level = recursive,
+            .argc       = argc,
+            .argv       = argv,
+            .cmdp       = cmdp,
+            .sub_level  = recursive,
+            .out_stream = OUT_STREAM,
+            .err_stream = ERR_STREAM,
         };
         cmdp->fn_before(&fn_before_param);
     }
@@ -587,6 +589,12 @@ static cmdp_result_t cmdp_run_recursive(int argc, char **argv, cmdp_command_st *
             }
             parsed_options += 1;
         }
+        // -- (end of options)
+        else if (cur_len == 2 && cur_arg[0] == '-' && cur_arg[1] == '-')
+        {
+            arg_index += 1;
+            break;
+        }
         else
         {
             // not option, break
@@ -597,11 +605,13 @@ static cmdp_result_t cmdp_run_recursive(int argc, char **argv, cmdp_command_st *
     if (cmdp->fn_process != NULL)
     {
         cmdp_process_param_st fn_process_param = {
-            .argc      = argc - arg_index,
-            .argv      = argv + arg_index,
-            .cmdp      = cmdp,
-            .opts      = parsed_options,
-            .sub_level = recursive,
+            .argc       = argc - arg_index,
+            .argv       = argv + arg_index,
+            .cmdp       = cmdp,
+            .opts       = parsed_options,
+            .sub_level  = recursive,
+            .out_stream = OUT_STREAM,
+            .err_stream = ERR_STREAM,
         };
         cmdp_action_t code = cmdp->fn_process(&fn_process_param);
         bool show_help     = HAS_FLAG(code, CMDP_ACT_SHOW_HELP);
