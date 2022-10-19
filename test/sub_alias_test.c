@@ -3,19 +3,19 @@
 static cmdp_command_st g_command = {
     "App",
     .sub_commands =
-        (cmdp_command_st[]){
-            {"init", "init something"},
-            {"run", "run something", .alias_name = "r",
-             .sub_commands =
-                 (cmdp_command_st[]){
-                     {"app-a", "run app a", .alias_name = "a"},
-                     {"app-b", "run app b"},
-                     {0},
-                 }},
-            {"test", "test something", .alias_name = "t"},
-            {"help", "help doc", .alias_name = "h"},
-            {"exit", "exit app"},
-            {0},
+        (cmdp_command_st *[]){
+            &(cmdp_command_st){"init", "init something"},
+            &(cmdp_command_st){"run", "run something", .alias_name = "r",
+                               .sub_commands =
+                                   (cmdp_command_st *[]){
+                                       &(cmdp_command_st){"app-a", "run app a", .alias_name = "a"},
+                                       &(cmdp_command_st){"app-b", "run app b"},
+                                       NULL,
+                                   }},
+            &(cmdp_command_st){"test", "test something", .alias_name = "t"},
+            &(cmdp_command_st){"help", "help doc", .alias_name = "h"},
+            &(cmdp_command_st){"exit", "exit app"},
+            NULL,
         },
 };
 

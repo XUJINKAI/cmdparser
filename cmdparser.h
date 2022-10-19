@@ -89,8 +89,8 @@ struct cmdp_command_st
 
     /* end with {0} */
     cmdp_option_st *options;
-    /* end with {0} */
-    cmdp_command_st *sub_commands;
+    /* end with NULL */
+    cmdp_command_st **sub_commands;
 
     // run before command's options parse
     void (*fn_before)(cmdp_before_param_st *params);
@@ -141,6 +141,12 @@ int main(int argc, char**argv) {
  */
 CMDP_EXTERN cmdp_result_t cmdp_run(int argc, char **argv, cmdp_command_st *root_command);
 
+
+#define CMDP_DOC(document)                                                                                             \
+    &(cmdp_command_st)                                                                                                 \
+    {                                                                                                                  \
+        .doc = document                                                                                                \
+    }
 
 // ===================
 // global config

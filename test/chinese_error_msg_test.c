@@ -11,11 +11,11 @@ static cmdp_command_st g_command = {
             {0},
         },
     .sub_commands =
-        (cmdp_command_st[]){
-            {.doc = "\n"},
-            {"init", "初始化"},
-            {"exit", "退出"},
-            {0},
+        (cmdp_command_st *[]){
+            CMDP_DOC("\n"),
+            &(cmdp_command_st){"init", "初始化"},
+            &(cmdp_command_st){"exit", "退出"},
+            NULL,
         },
 };
 

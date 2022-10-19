@@ -62,13 +62,13 @@ Set `sub_commands` field, nested can be infinite.
 ```c
 static cmdp_command_st cmdp = {
     .options = {...},
-    .sub_commands = (cmdp_command_st[]){
-        {
+    .sub_commands = (cmdp_command_st*[]){
+        &(cmdp_command_st){
             .name = "sub",
             .options = {...},
             .fn_process = sub_callback,
         },
-        {0},                        // ends with {0}
+        NULL,                        // ends with NULL
     },
 };
 ```

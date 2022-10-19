@@ -39,14 +39,14 @@ static cmdp_command_st g_command = {
             {0},
         },
     .sub_commands =
-        (cmdp_command_st[]){
-            {
+        (cmdp_command_st *[]){
+            &(cmdp_command_st){
                 "run",
                 "run command",
                 .fn_process = cb_process,
                 .fn_flag    = cb_flag_cmd_run,
             },
-            {0},
+            NULL,
         },
 };
 

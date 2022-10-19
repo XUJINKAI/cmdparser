@@ -7,12 +7,12 @@ static cmdp_command_st g_command = {
             {0},
         },
     .sub_commands =
-        (cmdp_command_st[]){
-            {
+        (cmdp_command_st *[]){
+            &(cmdp_command_st){
                 "run",
                 "run command",
             },
-            {0},
+            NULL,
         },
 };
 static const char *g_main_help = "  -v, --verbose              Verbose Log\n"

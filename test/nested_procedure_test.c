@@ -40,26 +40,26 @@ static cmdp_command_st g_command = {
     .fn_before  = cb_before,
     .fn_process = cb_process,
     .sub_commands =
-        (cmdp_command_st[]){
-            {
+        (cmdp_command_st *[]){
+            &(cmdp_command_st){
                 .name       = "L1",
                 .desc       = "L1 desc",
                 .doc        = "L1 doc\n",
                 .fn_before  = cb_before,
                 .fn_process = cb_process,
                 .sub_commands =
-                    (cmdp_command_st[]){
-                        {
+                    (cmdp_command_st *[]){
+                        &(cmdp_command_st){
                             .name       = "L2",
                             .desc       = "L2 desc",
                             .doc        = "L2 doc\n",
                             .fn_before  = cb_before,
                             .fn_process = cb_process,
                         },
-                        {0},
+                        NULL,
                     },
             },
-            {0},
+            NULL,
         },
 };
 static const char *g_L0_help = "L0 doc\n"

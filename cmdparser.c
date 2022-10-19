@@ -240,10 +240,10 @@ static void doc_gen_command(FILE *fp, cmdp_command_st *command)
 
     if (command->sub_commands != NULL)
     {
-        int sub_command_count = nonzero_countof(command->sub_commands, sizeof(cmdp_command_st));
+        int sub_command_count = nonzero_countof(command->sub_commands, sizeof(cmdp_command_st *));
         for (int i = 0; i < sub_command_count; i++)
         {
-            cmdp_command_st *n = command->sub_commands + i;
+            cmdp_command_st *n = command->sub_commands[i];
             if (n->fn_flag)
             {
                 cmdp_flag_t flag = n->fn_flag(n);
@@ -299,10 +299,10 @@ static void cmdp_fprint_all_documents_recursive(FILE *fp, cmdp_command_st *cmdp,
     fprintf(fp, (colored ? CYAN(">>") " " GREEN("%s") "\n" : ">> %s\n"), command_name);
     cmdp_fprint_command_doc(fp, cmdp);
 
-    int count = nonzero_countof(cmdp->sub_commands, sizeof(cmdp_command_st));
+    int count = nonzero_countof(cmdp->sub_commands, sizeof(cmdp_command_st *));
     for (int i = 0; i < count; i++)
     {
-        cmdp_command_st *p = cmdp->sub_commands + i;
+        cmdp_command_st *p = cmdp->sub_commands[i];
 
         if (p->fn_flag)
         {
@@ -362,11 +362,11 @@ static cmdp_option_st *find_long_option(char *long_option, cmdp_option_st *optio
     return NULL;
 }
 
-static cmdp_command_st *find_command(char *command_name, cmdp_command_st *commands, int count)
+static cmdp_command_st *find_command(char *command_name, cmdp_command_st **commands, int count)
 {
     for (int i = 0; i < count; i++)
     {
-        cmdp_command_st *p = commands + i;
+        cmdp_command_st *p = commands[i];
         if (p->name == NULL)
         {
             continue;
@@ -643,7 +643,7 @@ static cmdp_result_t cmdp_run_recursive(int argc, char **argv, cmdp_command_st *
 
     if (cmdp->sub_commands && arg_index < argc)
     {
-        int commands_count    = nonzero_countof(cmdp->sub_commands, sizeof(cmdp_command_st));
+        int commands_count    = nonzero_countof(cmdp->sub_commands, sizeof(cmdp_command_st *));
         cmdp_command_st *find = find_command(argv[arg_index], cmdp->sub_commands, commands_count);
         if (find == NULL)
         {

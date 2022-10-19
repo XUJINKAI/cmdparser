@@ -16,8 +16,8 @@ static cmdp_command_st g_command = {
             {0},
         },
     .sub_commands =
-        (cmdp_command_st[]){
-            {
+        (cmdp_command_st *[]){
+            &(cmdp_command_st){
                 "run",
                 .options =
                     (cmdp_option_st[]){
@@ -27,7 +27,7 @@ static cmdp_command_st g_command = {
                 .fn_before  = g_before,
                 .fn_process = g_process,
             },
-            {0},
+            NULL,
         },
 };
 
