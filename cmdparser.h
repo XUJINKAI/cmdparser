@@ -162,7 +162,7 @@ typedef struct cmdp_global_config_st
     FILE *err_stream;
 } cmdp_global_config_st;
 
-CMDP_EXTERN cmdp_global_config_st *cmdp_get_global_config();
-CMDP_EXTERN void cmdp_reset_global_config();
+CMDP_EXTERN cmdp_global_config_st *cmdp_get_global_config(void);
+CMDP_EXTERN void cmdp_reset_global_config(void);
 
 #endif /* __CMD_PARSER_H__ */

@@ -15,6 +15,8 @@ LICENSE: MIT
 #endif
 #if defined(_MSC_VER)
 #include <io.h>
+#define isatty _isatty
+#define fileno _fileno
 #endif
 
 // ============================================================================
@@ -59,7 +61,7 @@ static cmdp_global_config_st g_config = {
     .help_long_option  = (char *)"help",
 };
 
-static void reset_global_config()
+static void reset_global_config(void)
 {
     memset(&g_config, 0, sizeof(g_config));
     g_config.help_short_option = 'h';
@@ -677,12 +679,12 @@ cmdp_result_t cmdp_run(int argc, char **argv, cmdp_command_st *root_command)
     return cmdp_run_recursive(argc, argv, root_command, 0);
 }
 
-cmdp_global_config_st *cmdp_get_global_config()
+cmdp_global_config_st *cmdp_get_global_config(void)
 {
     return &g_config;
 }
 
-void cmdp_reset_global_config()
+void cmdp_reset_global_config(void)
 {
     reset_global_config();
 }
