@@ -176,6 +176,13 @@ static void doc_gen_options(FILE *fp, cmdp_option_st *options)
                 pos += 2;
             }
         }
+#ifdef CMDP_DOC_ALIGN_LONG_OPTION
+        else
+        {
+            fprintf(fp, "    ");
+            pos += 4;
+        }
+#endif
 
         if (n->long_option != NULL)
         {
@@ -204,15 +211,21 @@ static void doc_gen_options(FILE *fp, cmdp_option_st *options)
         }
         if (alias != NULL)
         {
-            fprintf(fp, "%s%s", ((n->long_option == NULL) ? " " : "="), alias);
+            fprintf(fp, "%s%s", " ", alias);
             pos += 1 + strlen(alias);
         }
 
         long remain_prefix = HELP_PREFIX_LEN - pos;
-        long repeat_count  = remain_prefix > 2 ? remain_prefix : 2;
-        while (repeat_count--)
+        if (remain_prefix >= 2)
         {
-            fputc(' ', fp);
+            while (remain_prefix--)
+            {
+                fputc(' ', fp);
+            }
+        }
+        else
+        {
+            fprintf(fp, "\n                             ");
         }
 
         fprintf(fp, "%s\n", n->description);

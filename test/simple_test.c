@@ -28,10 +28,10 @@ static cmdp_command_st g_command = {
 };
 
 static char *g_expect_help = "Student struct.\n\n"
-                             "  -n, --name=<string>        Input Name String\n"
+                             "  -n, --name <string>        Input Name String\n"
                              "  -s, --student              Indicate is student\n"
-                             "  -a, --age=<int>            Input Age\n"
-                             "  --height=<HEIGHT>          Input Height\n"
+                             "  -a, --age <int>            Input Age\n"
+                             "  --height <HEIGHT>          Input Height\n"
                              "  -d <ADDRESS>               Input Address\n";
 
 static void g_before(cmdp_before_param_st *params)

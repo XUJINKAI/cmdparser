@@ -21,10 +21,10 @@ static cmdp_command_st g_command = {
 
 static char *g_expect_help = "中文测试\n"
                              "\n"
-                             "  -n, --name=<string>        姓名字符串\n"
+                             "  -n, --name <string>        姓名字符串\n"
                              "  -s, --student              是否学生\n"
-                             "  -a, --age=<int>            年龄（整数）\n"
-                             "  --height=<number>          身高（米）\n"
+                             "  -a, --age <int>            年龄（整数）\n"
+                             "  --height <number>          身高（米）\n"
                              "\n"
                              "  init                       初始化\n"
                              "  exit                       退出\n";

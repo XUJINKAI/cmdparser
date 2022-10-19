@@ -30,7 +30,7 @@ Command parser library (C/C++), with highly customizable.
 
 [demo_simple](demo_simple/main.c) is an basic demo about parse options.
 
-[demo_git](demo_git/main.c) follows git commands demos how to handle complex sub-commands/options.
+[demo_git](demo_git) follows git commands demos how to handle complex sub-commands/options.
 
 [test](test) Unit Tests covers most features.
 

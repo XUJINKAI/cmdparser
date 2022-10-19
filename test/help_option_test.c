@@ -1,9 +1,11 @@
 #include "common.h"
 
 static cmdp_command_st g_command = {
+    .doc = "doc\n",
     .options =
         (cmdp_option_st[]){
             {'v', "verbose", "Verbose Log"},
+            {0, "looooooooooooooooooooooooooooooog", "Long option will break line"},
             {0},
         },
     .sub_commands =
@@ -15,7 +17,10 @@ static cmdp_command_st g_command = {
             NULL,
         },
 };
-static const char *g_main_help = "  -v, --verbose              Verbose Log\n"
+static const char *g_main_help = "doc\n"
+                                 "  -v, --verbose              Verbose Log\n"
+                                 "  --looooooooooooooooooooooooooooooog\n"
+                                 "                             Long option will break line\n"
                                  "  run                        run command\n";
 
 #define __START(h_short, h_long)                                                                                       \
