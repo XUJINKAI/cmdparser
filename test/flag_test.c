@@ -56,8 +56,8 @@ UTEST(flag, normal)
     __START();
     RUN_CMD(&g_command, "--help");
     EXPECT_CMD(CMDP_OK,
-               "  -v, --verbose              Verbose Log\n"
-               "  run                        run command\n",
+               "  run                        run command\n"
+               "  -v, --verbose              Verbose Log\n",
                "");
     END_CMD();
 }

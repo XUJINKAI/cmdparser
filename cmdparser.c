@@ -151,11 +151,11 @@ static void doc_gen_options(FILE *fp, cmdp_option_st *options)
     */
     cmdp_option_st *n = options;
     int count         = nonzero_countof(options, sizeof(cmdp_option_st));
-    for (int i = 0; i < count; i++)
+    for (int i = 0; i < count; i++, n++)
     {
         if (n->fn_flag)
         {
-            cmdp_flag_t flag = n->fn_flag(n);
+            cmdp_flag_t flag = n->fn_flag();
             if (HAS_FLAG(flag, CMDP_FLAG_HIDE) || HAS_FLAG(flag, CMDP_FLAG_DISABLE))
             {
                 continue;
@@ -229,7 +229,6 @@ static void doc_gen_options(FILE *fp, cmdp_option_st *options)
         }
 
         fprintf(fp, "%s\n", n->description);
-        n++;
     }
 }
 
@@ -246,11 +245,6 @@ static void doc_gen_command(FILE *fp, cmdp_command_st *command)
         fputs(command->doc, fp);
     }
 
-    if (command->options != NULL)
-    {
-        cmdp_fprint_options_doc(fp, command->options);
-    }
-
     if (command->sub_commands != NULL)
     {
         int sub_command_count = nonzero_countof(command->sub_commands, sizeof(cmdp_command_st *));
@@ -259,7 +253,7 @@ static void doc_gen_command(FILE *fp, cmdp_command_st *command)
             cmdp_command_st *n = command->sub_commands[i];
             if (n->fn_flag)
             {
-                cmdp_flag_t flag = n->fn_flag(n);
+                cmdp_flag_t flag = n->fn_flag();
                 if (HAS_FLAG(flag, CMDP_FLAG_HIDE) || HAS_FLAG(flag, CMDP_FLAG_DISABLE))
                 {
                     continue;
@@ -298,6 +292,16 @@ static void doc_gen_command(FILE *fp, cmdp_command_st *command)
             n++;
         }
     }
+
+    if (command->options != NULL)
+    {
+        cmdp_fprint_options_doc(fp, command->options);
+    }
+
+    if (command->doc_tail)
+    {
+        fputs(command->doc_tail, fp);
+    }
 }
 
 // ============================================================================
@@ -319,7 +323,7 @@ static void cmdp_fprint_all_documents_recursive(FILE *fp, cmdp_command_st *cmdp,
 
         if (p->fn_flag)
         {
-            cmdp_flag_t flag = p->fn_flag(p);
+            cmdp_flag_t flag = p->fn_flag();
             if (HAS_FLAG(flag, CMDP_FLAG_HIDE) || HAS_FLAG(flag, CMDP_FLAG_DISABLE))
             {
                 continue;
@@ -348,7 +352,7 @@ static cmdp_option_st *find_short_option(int short_option, cmdp_option_st *optio
         cmdp_option_st *p = options + i;
         if (p->short_option != 0 && p->short_option == short_option)
         {
-            if (p->fn_flag && HAS_FLAG(p->fn_flag(p), CMDP_FLAG_DISABLE))
+            if (p->fn_flag && HAS_FLAG(p->fn_flag(), CMDP_FLAG_DISABLE))
             {
                 return NULL;
             }
@@ -365,7 +369,7 @@ static cmdp_option_st *find_long_option(char *long_option, cmdp_option_st *optio
         cmdp_option_st *p = options + i;
         if (p->long_option != 0 && strcmp(p->long_option, long_option) == 0)
         {
-            if (p->fn_flag && HAS_FLAG(p->fn_flag(p), CMDP_FLAG_DISABLE))
+            if (p->fn_flag && HAS_FLAG(p->fn_flag(), CMDP_FLAG_DISABLE))
             {
                 return NULL;
             }
@@ -387,7 +391,7 @@ static cmdp_command_st *find_command(char *command_name, cmdp_command_st **comma
 
         if (strcmp(command_name, p->name) == 0 || (p->alias_name != NULL && (strcmp(command_name, p->alias_name) == 0)))
         {
-            if (p->fn_flag && HAS_FLAG(p->fn_flag(p), CMDP_FLAG_DISABLE))
+            if (p->fn_flag && HAS_FLAG(p->fn_flag(), CMDP_FLAG_DISABLE))
             {
                 return NULL;
             }
@@ -672,9 +676,8 @@ static cmdp_result_t cmdp_run_recursive(int argc, char **argv, cmdp_command_st *
 // expose
 // ============================================================================
 
-cmdp_flag_t cmdp_flag_always_hide(cmdp_option_st *self)
+cmdp_flag_t cmdp_flag_always_hide()
 {
-    (void)self;
     return CMDP_FLAG_HIDE;
 }
 

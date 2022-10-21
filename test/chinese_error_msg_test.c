@@ -2,6 +2,13 @@
 
 static cmdp_command_st g_command = {
     .doc = "中文测试\n\n",
+    .sub_commands =
+        (cmdp_command_st *[]){
+            &(cmdp_command_st){"init", "初始化"},
+            &(cmdp_command_st){"exit", "退出"},
+            CMDP_DOC("\n"),
+            NULL,
+        },
     .options =
         (cmdp_option_st[]){
             {'n', "name", "姓名字符串", CMDP_TYPE_STRING_PTR},
@@ -10,24 +17,17 @@ static cmdp_command_st g_command = {
             {0, "height", "身高（米）", CMDP_TYPE_DOUBLE},
             {0},
         },
-    .sub_commands =
-        (cmdp_command_st *[]){
-            CMDP_DOC("\n"),
-            &(cmdp_command_st){"init", "初始化"},
-            &(cmdp_command_st){"exit", "退出"},
-            NULL,
-        },
 };
 
 static char *g_expect_help = "中文测试\n"
                              "\n"
+                             "  init                       初始化\n"
+                             "  exit                       退出\n"
+                             "\n"
                              "  -n, --name <string>        姓名字符串\n"
                              "  -s, --student              是否学生\n"
                              "  -a, --age <int>            年龄（整数）\n"
-                             "  --height <number>          身高（米）\n"
-                             "\n"
-                             "  init                       初始化\n"
-                             "  exit                       退出\n";
+                             "  --height <number>          身高（米）\n";
 
 void cmdp_configure_chinese();
 #define __START()                                                                                                      \

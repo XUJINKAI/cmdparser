@@ -98,10 +98,13 @@ struct cmdp_command_st
     cmdp_action_t (*fn_process)(cmdp_process_param_st *params);
 
     // hide or disable
-    cmdp_flag_t (*fn_flag)(cmdp_command_st *self);
+    cmdp_flag_t (*fn_flag)();
 
     // shortcut for name, e.g. "s, state        Show current state"
     char *alias_name;
+
+    /* multi_line document */
+    char *doc_tail;
 };
 
 struct cmdp_option_st
@@ -118,11 +121,11 @@ struct cmdp_option_st
     char *type_name;
 
     // hide or disable
-    cmdp_flag_t (*fn_flag)(cmdp_option_st *self);
+    cmdp_flag_t (*fn_flag)();
 };
 
 #define CMDP_HIDE .fn_flag = cmdp_flag_always_hide
-CMDP_EXTERN cmdp_flag_t cmdp_flag_always_hide(cmdp_option_st *self);
+CMDP_EXTERN cmdp_flag_t cmdp_flag_always_hide();
 
 CMDP_EXTERN void cmdp_fprint_options_doc(FILE *fp, cmdp_option_st *options);
 CMDP_EXTERN void cmdp_fprint_command_doc(FILE *fp, cmdp_command_st *command);

@@ -18,10 +18,10 @@ static cmdp_command_st g_command = {
         },
 };
 static const char *g_main_help = "doc\n"
+                                 "  run                        run command\n"
                                  "  -v, --verbose              Verbose Log\n"
                                  "  --looooooooooooooooooooooooooooooog\n"
-                                 "                             Long option will break line\n"
-                                 "  run                        run command\n";
+                                 "                             Long option will break line\n";
 
 #define __START(h_short, h_long)                                                                                       \
     START_CMD();                                                                                                       \
