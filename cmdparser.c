@@ -345,12 +345,14 @@ static void cmdp_fprint_all_documents_recursive(FILE *fp, cmdp_command_st *cmdp,
     }
 }
 
-static cmdp_option_st *find_short_option(int short_option, cmdp_option_st *options, int count)
+static cmdp_option_st *find_option(int short_option, char *long_option, cmdp_command_st *cmdp)
 {
+    int count = nonzero_countof(cmdp->options, sizeof(cmdp_option_st));
     for (int i = 0; i < count; i++)
     {
-        cmdp_option_st *p = options + i;
-        if (p->short_option != 0 && p->short_option == short_option)
+        cmdp_option_st *p = cmdp->options + i;
+        if ((short_option != 0 && p->short_option != 0 && p->short_option == short_option) ||
+            (long_option != NULL && p->long_option != NULL && strcmp(p->long_option, long_option) == 0))
         {
             if (p->fn_flag && HAS_FLAG(p->fn_flag(), CMDP_FLAG_DISABLE))
             {
@@ -359,22 +361,9 @@ static cmdp_option_st *find_short_option(int short_option, cmdp_option_st *optio
             return p;
         }
     }
-    return NULL;
-}
-
-static cmdp_option_st *find_long_option(char *long_option, cmdp_option_st *options, int count)
-{
-    for (int i = 0; i < count; i++)
+    if (cmdp->__parent)
     {
-        cmdp_option_st *p = options + i;
-        if (p->long_option != 0 && strcmp(p->long_option, long_option) == 0)
-        {
-            if (p->fn_flag && HAS_FLAG(p->fn_flag(), CMDP_FLAG_DISABLE))
-            {
-                return NULL;
-            }
-            return p;
-        }
+        return find_option(short_option, long_option, cmdp->__parent);
     }
     return NULL;
 }
@@ -504,10 +493,9 @@ static cmdp_result_t cmdp_run_recursive(int argc, char **argv, cmdp_command_st *
     int arg_index      = 0;
     for (; arg_index < argc; arg_index++)
     {
-        char *cur_arg     = argv[arg_index];
-        char *next_arg    = (arg_index + 1) < argc ? argv[arg_index + 1] : NULL;
-        int cur_len       = strlen(cur_arg);
-        int options_count = nonzero_countof(cmdp->options, sizeof(cmdp_option_st));
+        char *cur_arg  = argv[arg_index];
+        char *next_arg = (arg_index + 1) < argc ? argv[arg_index + 1] : NULL;
+        int cur_len    = strlen(cur_arg);
         // -short
         if (cur_len >= 2 && cur_arg[0] == '-' && cur_arg[1] != '-')
         {
@@ -524,7 +512,7 @@ static cmdp_result_t cmdp_run_recursive(int argc, char **argv, cmdp_command_st *
                     return CMDP_OK;
                 }
 
-                cmdp_option_st *find = find_short_option(cur_ch, cmdp->options, options_count);
+                cmdp_option_st *find = find_option(cur_ch, 0, cmdp);
                 if (find == NULL)
                 {
                     error_unknown_short_option(cmdp, cur_ch);
@@ -576,7 +564,7 @@ static cmdp_result_t cmdp_run_recursive(int argc, char **argv, cmdp_command_st *
                 return CMDP_OK;
             }
 
-            cmdp_option_st *find = find_long_option(long_option_real, cmdp->options, options_count);
+            cmdp_option_st *find = find_option(0, long_option_real, cmdp);
             if (find == NULL)
             {
                 error_unknown_long_option(cmdp, long_option_real);
@@ -672,6 +660,28 @@ static cmdp_result_t cmdp_run_recursive(int argc, char **argv, cmdp_command_st *
     return CMDP_OK;
 }
 
+static void cmdp_setup(cmdp_command_st *cmdp, cmdp_command_st *parent)
+{
+    cmdp->__parent = parent;
+    if (cmdp->sub_commands)
+    {
+        int commands_count = nonzero_countof(cmdp->sub_commands, sizeof(cmdp_command_st *));
+        for (int i = 0; i < commands_count; i++)
+        {
+            cmdp_setup(cmdp->sub_commands[i], cmdp);
+        }
+    }
+    if (cmdp->options)
+    {
+        int options_count = nonzero_countof(cmdp->options, sizeof(cmdp_option_st));
+        for (int i = 0; i < options_count; i++)
+        {
+            cmdp_option_st *opt = cmdp->options + i;
+            opt->__flag         = 0;
+        }
+    }
+}
+
 // ============================================================================
 // expose
 // ============================================================================
@@ -702,6 +712,7 @@ void cmdp_help(cmdp_command_st *command)
 }
 cmdp_result_t cmdp_run(int argc, char **argv, cmdp_command_st *root_command)
 {
+    cmdp_setup(root_command, NULL);
     return cmdp_run_recursive(argc, argv, root_command, 0);
 }
 

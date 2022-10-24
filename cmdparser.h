@@ -105,6 +105,9 @@ struct cmdp_command_st
 
     /* multi_line document */
     char *doc_tail;
+
+    // private, used for global options
+    cmdp_command_st *__parent;
 };
 
 struct cmdp_option_st
@@ -122,6 +125,9 @@ struct cmdp_option_st
 
     // hide or disable
     cmdp_flag_t (*fn_flag)();
+
+    // private
+    int __flag;
 };
 
 #define CMDP_HIDE .fn_flag = cmdp_flag_always_hide

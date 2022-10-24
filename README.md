@@ -10,6 +10,8 @@ Command parser library (C/C++), with highly customizable.
 
 - Friendly API, configuration in ONE struct
 
+- Nested sub-commands support
+
 - Short option (`-a`) and long options (`--all`)
 
 - Short option `-a -b -n XJK` can be shorten to `-abn XJK` (`-nab XJK` as well)
@@ -18,7 +20,7 @@ Command parser library (C/C++), with highly customizable.
 
 - End of options `--` supported
 
-- Nested sub-commands
+- Global options. e.g. `git status --git-dir=.git` will work as expect. (if use this library)
 
 - Hide/Disable options or sub-commands
 
@@ -33,6 +35,8 @@ Command parser library (C/C++), with highly customizable.
 [demo_git](demo_git) follows git commands demos how to handle complex sub-commands/options.
 
 [test](test) Unit Tests covers most features.
+
+[xx-crypto-cli](https://github.com/XUJINKAI/xx-crypto-cli) A real example with plenty of commands.
 
 ## Document
 

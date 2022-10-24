@@ -43,15 +43,12 @@ static cmdp_action_t g_process(cmdp_process_param_st *params)
 }
 
 
-UTEST(future, global_options)
+UTEST(global_option, run)
 {
     START_CMD();
     RUN_CMD(&g_command, "run", "--all", "--verbose");
     EXPECT_STREQ("", r_out);
-    /* 
-    expect no error, but: Unknown option --verbose.
-     */
-    // EXPECT_STREQ("", r_err);
-    // EXPECT_EQ(CMDP_OK, r_code);
+    EXPECT_STREQ("", r_err);
+    EXPECT_EQ(CMDP_OK, r_code);
     END_CMD();
 }
