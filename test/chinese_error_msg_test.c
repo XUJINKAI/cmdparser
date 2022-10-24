@@ -100,3 +100,11 @@ UTEST(chinese, error_parse_float)
     EXPECT_CMD(CMDP_FAIL, "", "解析数字失败: 1.234a.\n");
     __END();
 }
+
+UTEST(chinese, error_repeat_option)
+{
+    __START();
+    RUN_CMD(&g_command, "--name", "name", "--name", "name");
+    EXPECT_CMD(CMDP_FAIL, "", "重复选项: --name.\n");
+    __END();
+}

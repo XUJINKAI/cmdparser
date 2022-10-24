@@ -128,6 +128,7 @@ struct cmdp_option_st
 
     // private
     int __flag;
+#define __CMDP_OPT_IS_PARSED 0x01
 };
 
 #define CMDP_HIDE .fn_flag = cmdp_flag_always_hide
@@ -176,6 +177,7 @@ typedef struct cmdp_global_config_st
     void (*fn_error_require_long_option_arg)(FILE *fp, cmdp_command_st *cmdp, char *s);
     void (*fn_error_parse_int)(FILE *fp, cmdp_command_st *cmdp, char *s);
     void (*fn_error_parse_float)(FILE *fp, cmdp_command_st *cmdp, char *s);
+    void (*fn_error_repeat_option)(FILE *fp, cmdp_command_st *cmdp, char c, char *s);
 
     FILE *out_stream;
     FILE *err_stream;

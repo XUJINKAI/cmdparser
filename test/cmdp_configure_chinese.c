@@ -35,6 +35,18 @@ static void __err_parse_float(FILE *fp, cmdp_command_st *cmdp, char *s)
     (void)cmdp;
     fprintf(fp, "解析数字失败: %s.\n", s);
 }
+static void __err_repeat_option(FILE *fp, cmdp_command_st *cmdp, char c, char *s)
+{
+    (void)cmdp;
+    if (c)
+    {
+        fprintf(fp, "重复选项: -%c.\n", c);
+    }
+    else
+    {
+        fprintf(fp, "重复选项: --%s.\n", s);
+    }
+}
 
 void cmdp_configure_chinese()
 {
@@ -46,4 +58,5 @@ void cmdp_configure_chinese()
     config->fn_error_require_long_option_arg  = __err_require_long_opt_arg;
     config->fn_error_parse_int                = __err_parse_int;
     config->fn_error_parse_float              = __err_parse_float;
+    config->fn_error_repeat_option            = __err_repeat_option;
 }

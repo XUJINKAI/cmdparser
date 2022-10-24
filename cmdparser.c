@@ -138,6 +138,22 @@ static void error_parse_float(cmdp_command_st *cmdp, char *s)
     }
     fprintf(ERR_STREAM, "Parse float failed: %s.\n", s);
 }
+static void error_repeat_option(cmdp_command_st *cmdp, char c, char *s)
+{
+    if (g_config.fn_error_repeat_option)
+    {
+        g_config.fn_error_repeat_option(ERR_STREAM, cmdp, c, s);
+        return;
+    }
+    if (c)
+    {
+        fprintf(ERR_STREAM, "Option -%c repeat.\n", c);
+    }
+    if (s)
+    {
+        fprintf(ERR_STREAM, "Option --%s repeat.\n", s);
+    }
+}
 static void doc_gen_options(FILE *fp, cmdp_option_st *options)
 {
     if (g_config.fn_doc_gen_options)
@@ -400,10 +416,15 @@ typedef enum
     EVAL_CODE_ERROR_ARG_NULL = _EC_ERROR_MASK_,
     EVAL_CODE_ERROR_PARSE_INT,
     EVAL_CODE_ERROR_PARSE_FLOAT,
+    EVAL_CODE_ERROR_REPEAT_OPTION,
 } EVAL_CODE;
 
 static EVAL_CODE eval_option_output(cmdp_option_st *option, char *arg)
 {
+    if (HAS_FLAG(option->__flag, __CMDP_OPT_IS_PARSED))
+    {
+        return EVAL_CODE_ERROR_REPEAT_OPTION;
+    }
     switch (option->type)
     {
         case CMDP_TYPE_BOOL: {
@@ -520,6 +541,7 @@ static cmdp_result_t cmdp_run_recursive(int argc, char **argv, cmdp_command_st *
                 }
                 eval_arg  = (eval_code == EVAL_CODE_ARG_USED) ? NULL : next_arg;
                 eval_code = eval_option_output(find, eval_arg);
+                find->__flag |= __CMDP_OPT_IS_PARSED;
                 if (HAS_FLAG(eval_code, _EC_ERROR_MASK_))
                 {
                     break;
@@ -539,6 +561,9 @@ static cmdp_result_t cmdp_run_recursive(int argc, char **argv, cmdp_command_st *
                     return CMDP_FAIL;
                 case EVAL_CODE_ERROR_PARSE_FLOAT:
                     error_parse_float(cmdp, eval_arg);
+                    return CMDP_FAIL;
+                case EVAL_CODE_ERROR_REPEAT_OPTION:
+                    error_repeat_option(cmdp, cur_ch, NULL);
                     return CMDP_FAIL;
                 case EVAL_CODE_DONE:
                     break;
@@ -572,6 +597,7 @@ static cmdp_result_t cmdp_run_recursive(int argc, char **argv, cmdp_command_st *
             }
             char *eval_arg      = (eq_ptr == NULL) ? next_arg : eq_ptr + 1;
             EVAL_CODE eval_code = eval_option_output(find, eval_arg);
+            find->__flag |= __CMDP_OPT_IS_PARSED;
             switch (eval_code)
             {
                 case EVAL_CODE_ARG_USED:
@@ -588,6 +614,9 @@ static cmdp_result_t cmdp_run_recursive(int argc, char **argv, cmdp_command_st *
                     return CMDP_FAIL;
                 case EVAL_CODE_ERROR_PARSE_FLOAT:
                     error_parse_float(cmdp, eval_arg);
+                    return CMDP_FAIL;
+                case EVAL_CODE_ERROR_REPEAT_OPTION:
+                    error_repeat_option(cmdp, 0, long_option_real);
                     return CMDP_FAIL;
                 case EVAL_CODE_DONE:
                     break;

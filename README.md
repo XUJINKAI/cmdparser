@@ -22,11 +22,9 @@ Command parser library (C/C++), with highly customizable.
 
 - Global options. e.g. `git status --git-dir=.git` will work as expect. (if use this library)
 
-- Hide/Disable options or sub-commands
+- Hide/Disable options or sub-commands, repeat option detect
 
-- Language (error message) customizable
-
-- Highly customizable: help option, doc generator, output stream, etc.
+- Highly customizable: Language (error message), help option, doc generator, output stream, etc.
 
 ## Examples
 

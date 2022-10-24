@@ -201,6 +201,22 @@ UTEST(simple, parse_not_float)
     END_CMD();
 }
 
+UTEST(simple, parse_repeat_option_short)
+{
+    START_CMD();
+    RUN_CMD(&g_command, "-s", "-s");
+    EXPECT_CMD(CMDP_FAIL, "", "Option -s repeat.\n");
+    END_CMD();
+}
+
+UTEST(simple, parse_repeat_option_long)
+{
+    START_CMD();
+    RUN_CMD(&g_command, "--student", "--student");
+    EXPECT_CMD(CMDP_FAIL, "", "Option --student repeat.\n");
+    END_CMD();
+}
+
 // help doc
 
 UTEST(simple, help__void)
