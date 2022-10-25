@@ -158,6 +158,11 @@ CMDP_EXTERN cmdp_result_t cmdp_run(int argc, char **argv, cmdp_command_st *root_
         .doc = document                                                                                                \
     }
 
+#define CMDP_OPT_DOC(document)                                                                                         \
+    {                                                                                                                  \
+        .description = document                                                                                        \
+    }
+
 // ===================
 // global config
 // ===================

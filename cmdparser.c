@@ -178,6 +178,12 @@ static void doc_gen_options(FILE *fp, cmdp_option_st *options)
             }
         }
 
+        if (n->short_option == 0 && n->long_option == NULL)
+        {
+            fprintf(fp, "%s", n->description);
+            continue;
+        }
+
         fprintf(fp, "  ");
         int pos = 2;
 
