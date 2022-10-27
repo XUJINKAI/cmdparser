@@ -690,7 +690,7 @@ static cmdp_result_t cmdp_run_recursive(int argc, char **argv, cmdp_command_st *
             error_unknown_command(cmdp, argv[arg_index]);
             return CMDP_FAIL;
         }
-        return cmdp_run_recursive(argc - 1, argv + 1, find, recursive + 1);
+        return cmdp_run_recursive(argc - arg_index - 1, argv + arg_index + 1, find, recursive + 1);
     }
     return CMDP_OK;
 }
