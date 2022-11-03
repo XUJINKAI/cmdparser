@@ -20,7 +20,7 @@ static void cb_before(cmdp_before_param_st *params)
 static cmdp_action_t cb_process(cmdp_process_param_st *params)
 {
     LOG_INFO("is_verbose: %d\n", g_arg.g_is_verbose);
-    return CMDP_ACT_OVER;
+    return CMDP_ACT_OK;
 }
 static cmdp_flag_t cb_flag_opt_verbose(cmdp_option_st *self)
 {
@@ -55,7 +55,7 @@ UTEST(flag, normal)
 {
     __START();
     RUN_CMD(&g_command, "--help");
-    EXPECT_CMD(CMDP_OK,
+    EXPECT_CMD(0,
                "  run                        run command\n"
                "  -v, --verbose              Verbose Log\n",
                "");
@@ -68,7 +68,7 @@ UTEST(flag, hide_option_verbose__help)
     __START();
     g_flag_opt_verbose = CMDP_FLAG_HIDE;
     RUN_CMD(&g_command, "--help");
-    EXPECT_CMD(CMDP_OK, "  run                        run command\n", "");
+    EXPECT_CMD(0, "  run                        run command\n", "");
     EXPECT_EQ(false, g_arg.g_is_verbose);
     END_CMD();
 }
@@ -78,7 +78,7 @@ UTEST(flag, hide_option_verbose__v)
     __START();
     g_flag_opt_verbose = CMDP_FLAG_HIDE;
     RUN_CMD(&g_command, "-v");
-    EXPECT_CMD(CMDP_OK, "", "");
+    EXPECT_CMD(0, "", "");
     EXPECT_EQ(true, g_arg.g_is_verbose);
     END_CMD();
 }
@@ -88,7 +88,7 @@ UTEST(flag, hide_option_verbose__verbose)
     __START();
     g_flag_opt_verbose = CMDP_FLAG_HIDE;
     RUN_CMD(&g_command, "--verbose");
-    EXPECT_CMD(CMDP_OK, "", "");
+    EXPECT_CMD(0, "", "");
     EXPECT_EQ(true, g_arg.g_is_verbose);
     END_CMD();
 }
@@ -99,7 +99,7 @@ UTEST(flag, disable_option_verbose__help)
     __START();
     g_flag_opt_verbose = CMDP_FLAG_DISABLE;
     RUN_CMD(&g_command, "--help");
-    EXPECT_CMD(CMDP_OK, "  run                        run command\n", "");
+    EXPECT_CMD(0, "  run                        run command\n", "");
     EXPECT_EQ(false, g_arg.g_is_verbose);
     END_CMD();
 }
@@ -109,7 +109,7 @@ UTEST(flag, disable_option_verbose__v)
     __START();
     g_flag_opt_verbose = CMDP_FLAG_DISABLE;
     RUN_CMD(&g_command, "-v");
-    EXPECT_CMD(CMDP_FAIL, "", "Unknown option -v.\n");
+    EXPECT_CMD(1, "", "Unknown option -v.\n");
     EXPECT_EQ(false, g_arg.g_is_verbose);
     END_CMD();
 }
@@ -119,7 +119,7 @@ UTEST(flag, disable_option_verbose__verbose)
     __START();
     g_flag_opt_verbose = CMDP_FLAG_DISABLE;
     RUN_CMD(&g_command, "--verbose");
-    EXPECT_CMD(CMDP_FAIL, "", "Unknown option --verbose.\n");
+    EXPECT_CMD(1, "", "Unknown option --verbose.\n");
     EXPECT_EQ(false, g_arg.g_is_verbose);
     END_CMD();
 }
@@ -130,7 +130,7 @@ UTEST(flag, hide_cmd_run__help)
     __START();
     g_flag_cmd_run = CMDP_FLAG_HIDE;
     RUN_CMD(&g_command, "--help");
-    EXPECT_CMD(CMDP_OK, "  -v, --verbose              Verbose Log\n", "");
+    EXPECT_CMD(0, "  -v, --verbose              Verbose Log\n", "");
     END_CMD();
 }
 
@@ -139,7 +139,7 @@ UTEST(flag, hide_cmd_run__run)
     __START();
     g_flag_cmd_run = CMDP_FLAG_HIDE;
     RUN_CMD(&g_command, "run");
-    EXPECT_CMD(CMDP_OK, "", "");
+    EXPECT_CMD(0, "", "");
     END_CMD();
 }
 
@@ -149,7 +149,7 @@ UTEST(flag, disable_cmd_run__help)
     __START();
     g_flag_cmd_run = CMDP_FLAG_DISABLE;
     RUN_CMD(&g_command, "--help");
-    EXPECT_CMD(CMDP_OK, "  -v, --verbose              Verbose Log\n", "");
+    EXPECT_CMD(0, "  -v, --verbose              Verbose Log\n", "");
     END_CMD();
 }
 
@@ -158,6 +158,6 @@ UTEST(flag, disable_cmd_run__run)
     __START();
     g_flag_cmd_run = CMDP_FLAG_DISABLE;
     RUN_CMD(&g_command, "run");
-    EXPECT_CMD(CMDP_FAIL, "", "Unknown command run.\n");
+    EXPECT_CMD(1, "", "Unknown command run.\n");
     END_CMD();
 }

@@ -49,5 +49,5 @@ static cmdp_action_t callback_function(cmdp_process_param_st *params)
     {
         printf("argv[%d]: %s\n", i, params->argv[i]);
     }
-    return CMDP_ACT_OVER;
+    return CMDP_ACT_OK;
 }

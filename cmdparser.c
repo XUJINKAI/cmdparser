@@ -496,7 +496,9 @@ static EVAL_CODE eval_option_output(cmdp_option_st *option, char *arg)
     return EVAL_CODE_DONE;
 }
 
-static cmdp_result_t cmdp_run_recursive(int argc, char **argv, cmdp_command_st *cmdp, int recursive)
+#define _parse_ret_0 (-1)
+#define _parse_ret_1 (-2)
+static int cmdp_parse_args(int argc, char **argv, cmdp_command_st *cmdp, int recursive)
 {
     if (cmdp->fn_before)
     {
@@ -513,7 +515,7 @@ static cmdp_result_t cmdp_run_recursive(int argc, char **argv, cmdp_command_st *
     if (argc == 0 && cmdp->fn_process == NULL)
     {
         cmdp_help(cmdp);
-        return CMDP_OK;
+        return 0;
     }
 
     int parsed_options = 0;
@@ -536,14 +538,14 @@ static cmdp_result_t cmdp_run_recursive(int argc, char **argv, cmdp_command_st *
                 if (g_config.help_short_option != '\0' && cur_ch == g_config.help_short_option)
                 {
                     cmdp_help(cmdp);
-                    return CMDP_OK;
+                    return _parse_ret_0;
                 }
 
                 cmdp_option_st *find = find_option(cur_ch, 0, cmdp);
                 if (find == NULL)
                 {
                     error_unknown_short_option(cmdp, cur_ch);
-                    return CMDP_FAIL;
+                    return _parse_ret_1;
                 }
                 eval_arg  = (eval_code == EVAL_CODE_ARG_USED) ? NULL : next_arg;
                 eval_code = eval_option_output(find, eval_arg);
@@ -561,16 +563,16 @@ static cmdp_result_t cmdp_run_recursive(int argc, char **argv, cmdp_command_st *
                     break;
                 case EVAL_CODE_ERROR_ARG_NULL:
                     error_require_short_option_arg(cmdp, cur_ch);
-                    return CMDP_FAIL;
+                    return _parse_ret_1;
                 case EVAL_CODE_ERROR_PARSE_INT:
                     error_parse_int(cmdp, eval_arg);
-                    return CMDP_FAIL;
+                    return _parse_ret_1;
                 case EVAL_CODE_ERROR_PARSE_FLOAT:
                     error_parse_float(cmdp, eval_arg);
-                    return CMDP_FAIL;
+                    return _parse_ret_1;
                 case EVAL_CODE_ERROR_REPEAT_OPTION:
                     error_repeat_option(cmdp, cur_ch, NULL);
-                    return CMDP_FAIL;
+                    return _parse_ret_1;
                 case EVAL_CODE_DONE:
                     break;
             }
@@ -592,14 +594,14 @@ static cmdp_result_t cmdp_run_recursive(int argc, char **argv, cmdp_command_st *
             if (g_config.help_long_option != NULL && strcmp(g_config.help_long_option, long_option_start) == 0)
             {
                 cmdp_help(cmdp);
-                return CMDP_OK;
+                return _parse_ret_0;
             }
 
             cmdp_option_st *find = find_option(0, long_option_real, cmdp);
             if (find == NULL)
             {
                 error_unknown_long_option(cmdp, long_option_real);
-                return CMDP_FAIL;
+                return _parse_ret_1;
             }
             char *eval_arg      = (eq_ptr == NULL) ? next_arg : eq_ptr + 1;
             EVAL_CODE eval_code = eval_option_output(find, eval_arg);
@@ -614,16 +616,16 @@ static cmdp_result_t cmdp_run_recursive(int argc, char **argv, cmdp_command_st *
                     break;
                 case EVAL_CODE_ERROR_ARG_NULL:
                     error_require_long_option_arg(cmdp, long_option_real);
-                    return CMDP_FAIL;
+                    return _parse_ret_1;
                 case EVAL_CODE_ERROR_PARSE_INT:
                     error_parse_int(cmdp, eval_arg);
-                    return CMDP_FAIL;
+                    return _parse_ret_1;
                 case EVAL_CODE_ERROR_PARSE_FLOAT:
                     error_parse_float(cmdp, eval_arg);
-                    return CMDP_FAIL;
+                    return _parse_ret_1;
                 case EVAL_CODE_ERROR_REPEAT_OPTION:
                     error_repeat_option(cmdp, 0, long_option_real);
-                    return CMDP_FAIL;
+                    return _parse_ret_1;
                 case EVAL_CODE_DONE:
                     break;
             }
@@ -642,45 +644,6 @@ static cmdp_result_t cmdp_run_recursive(int argc, char **argv, cmdp_command_st *
         }
     }
 
-    if (cmdp->fn_process != NULL)
-    {
-        cmdp_process_param_st fn_process_param = {
-            .argc       = argc - arg_index,
-            .argv       = argv + arg_index,
-            .cmdp       = cmdp,
-            .opts       = parsed_options,
-            .sub_level  = recursive,
-            .out_stream = OUT_STREAM,
-            .err_stream = ERR_STREAM,
-        };
-        cmdp_action_t code = cmdp->fn_process(&fn_process_param);
-        bool show_help     = HAS_FLAG(code, CMDP_ACT_SHOW_HELP);
-        switch (code & 0xFFFF)
-        {
-            case CMDP_ACT_OVER:
-                if (show_help)
-                {
-                    cmdp_fprint_command_doc(OUT_STREAM, cmdp);
-                }
-                return CMDP_OK;
-
-            case CMDP_ACT_FAIL:
-                if (show_help)
-                {
-                    cmdp_fprint_command_doc(ERR_STREAM, cmdp);
-                }
-                return CMDP_FAIL;
-
-            case CMDP_ACT_CONTINUE:
-            default:
-                if (show_help)
-                {
-                    cmdp_fprint_command_doc(OUT_STREAM, cmdp);
-                }
-                break;
-        }
-    }
-
     if (cmdp->sub_commands && arg_index < argc)
     {
         int commands_count    = nonzero_countof(cmdp->sub_commands, sizeof(cmdp_command_st *));
@@ -688,16 +651,105 @@ static cmdp_result_t cmdp_run_recursive(int argc, char **argv, cmdp_command_st *
         if (find == NULL)
         {
             error_unknown_command(cmdp, argv[arg_index]);
-            return CMDP_FAIL;
+            return _parse_ret_1;
         }
-        return cmdp_run_recursive(argc - arg_index - 1, argv + arg_index + 1, find, recursive + 1);
+        find->__flag = __CMDP_CMD_IS_PARSED;
+        return arg_index + cmdp_parse_args(argc - arg_index - 1, argv + arg_index + 1, find, recursive + 1);
     }
-    return CMDP_OK;
+    return arg_index;
+}
+
+static int cmdp_count_parsed_options(cmdp_command_st *cmdp)
+{
+    if (cmdp->options == NULL)
+    {
+        return 0;
+    }
+    int count         = 0;
+    int options_count = nonzero_countof(cmdp->options, sizeof(cmdp_option_st));
+    for (int i = 0; i < options_count; i++)
+    {
+        cmdp_option_st *opt = cmdp->options + i;
+        if (HAS_FLAG(opt->__flag, __CMDP_OPT_IS_PARSED))
+        {
+            count++;
+        }
+    }
+    return count;
+}
+static cmdp_command_st *cmdp_find_parsed_cmd(cmdp_command_st *cmdp)
+{
+    if (cmdp->sub_commands == NULL)
+    {
+        return NULL;
+    }
+    int commands_count = nonzero_countof(cmdp->sub_commands, sizeof(cmdp_command_st *));
+    for (int i = 0; i < commands_count; i++)
+    {
+        cmdp_command_st *sub_cmd = cmdp->sub_commands[i];
+        if (HAS_FLAG(sub_cmd->__flag, __CMDP_CMD_IS_PARSED))
+        {
+            return sub_cmd;
+        }
+    }
+    return NULL;
+}
+static int cmdp_run_callback(int argc, char **argv, cmdp_command_st *cmdp, int recursive)
+{
+    if (cmdp->fn_process != NULL)
+    {
+        cmdp_process_param_st fn_process_param = {
+            .argc       = argc,
+            .argv       = argv,
+            .cmdp       = cmdp,
+            .opts       = cmdp_count_parsed_options(cmdp),
+            .sub_level  = recursive,
+            .out_stream = OUT_STREAM,
+            .err_stream = ERR_STREAM,
+            .error_code = 1,
+        };
+        cmdp_action_t code = cmdp->fn_process(&fn_process_param);
+        bool show_help     = HAS_FLAG(code, CMDP_ACT_SHOW_HELP);
+        switch (code & 0xFFFF)
+        {
+            case CMDP_ACT_OK:
+                if (show_help)
+                {
+                    cmdp_fprint_command_doc(OUT_STREAM, cmdp);
+                }
+                return 0;
+
+            case CMDP_ACT_ERROR:
+                if (show_help)
+                {
+                    cmdp_fprint_command_doc(ERR_STREAM, cmdp);
+                }
+                return fn_process_param.error_code;
+
+            case CMDP_ACT_CONTINUE:
+            default:
+                if (show_help)
+                {
+                    cmdp_fprint_command_doc(OUT_STREAM, cmdp);
+                }
+                cmdp_command_st *sub_cmd = cmdp_find_parsed_cmd(cmdp);
+                if (sub_cmd == NULL)
+                {
+                    return 0;
+                }
+                else
+                {
+                    return cmdp_run_callback(argc, argv, sub_cmd, recursive + 1);
+                }
+        }
+    }
+    return 0;
 }
 
 static void cmdp_setup(cmdp_command_st *cmdp, cmdp_command_st *parent)
 {
     cmdp->__parent = parent;
+    cmdp->__flag   = 0;
     if (cmdp->sub_commands)
     {
         int commands_count = nonzero_countof(cmdp->sub_commands, sizeof(cmdp_command_st *));
@@ -745,10 +797,19 @@ void cmdp_help(cmdp_command_st *command)
 {
     cmdp_fprint_command_doc(OUT_STREAM, command);
 }
-cmdp_result_t cmdp_run(int argc, char **argv, cmdp_command_st *root_command)
+int cmdp_run(int argc, char **argv, cmdp_command_st *root_command)
 {
     cmdp_setup(root_command, NULL);
-    return cmdp_run_recursive(argc, argv, root_command, 0);
+    int parsed = cmdp_parse_args(argc, argv, root_command, 0);
+    if (parsed < 0)
+    {
+        /* 
+        -1: return 0
+        -2: return 1
+         */
+        return -parsed - 1;
+    }
+    return cmdp_run_callback(argc - parsed, argv + parsed, root_command, 0);
 }
 
 cmdp_global_config_st *cmdp_get_global_config(void)

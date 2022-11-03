@@ -12,5 +12,5 @@ cmdp_command_st cmdp_pull = {
 static cmdp_action_t cb_pull(cmdp_process_param_st *params)
 {
     printf("cb_pull called.\n");
-    return CMDP_ACT_OVER;
+    return CMDP_ACT_OK;
 }

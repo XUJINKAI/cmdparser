@@ -65,7 +65,7 @@ static cmdp_action_t sub_process(cmdp_process_param_st *params)
 {
     fprintf(params->out_stream, "Sub: a=%d, b=%d, input=%s\n", arg_sub.opt_a, arg_sub.opt_b,
             arg_sub.opt_input ? arg_sub.opt_input : "");
-    return CMDP_ACT_OVER;
+    return CMDP_ACT_OK;
 }
 
 
@@ -77,7 +77,7 @@ UTEST(global_option, run_normal_full)
                  "Sub: a=1, b=1, input=xjk\n",
                  r_out);
     EXPECT_STREQ("", r_err);
-    EXPECT_EQ(CMDP_OK, r_code);
+    EXPECT_EQ(0, r_code);
     END_CMD();
 }
 
@@ -87,7 +87,7 @@ UTEST(global_option, only_global_options)
     RUN_CMD(&g_command, "--verbose", "--debug", "--work-dir", "/root");
     EXPECT_STREQ("Global: verbose=1, debug=1, work_dir=/root\n", r_out);
     EXPECT_STREQ("", r_err);
-    EXPECT_EQ(CMDP_OK, r_code);
+    EXPECT_EQ(0, r_code);
     END_CMD();
 }
 
@@ -95,11 +95,10 @@ UTEST(global_option, run_global_option_behind)
 {
     START_CMD();
     RUN_CMD(&g_command, "run", "-b", "--verbose", "--work-dir", "/root", "--input", "xjk");
-    // BUG
-    // EXPECT_STREQ("Global: verbose=1, debug=0, work_dir=/root\n"
-    //              "Sub: a=0, b=1, input=xjk\n",
-    //              r_out);
+    EXPECT_STREQ("Global: verbose=1, debug=0, work_dir=/root\n"
+                 "Sub: a=0, b=1, input=xjk\n",
+                 r_out);
     EXPECT_STREQ("", r_err);
-    EXPECT_EQ(CMDP_OK, r_code);
+    EXPECT_EQ(0, r_code);
     END_CMD();
 }

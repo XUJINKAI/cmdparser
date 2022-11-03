@@ -48,13 +48,13 @@ static cmdp_action_t g_process(cmdp_process_param_st *params)
 
     if (params->opts != 0)
     {
-        return CMDP_ACT_OVER;
+        return CMDP_ACT_OK;
     }
     if (params->argc == 0)
     {
         return CMDP_ACT_SHOW_HELP;
     }
-    return CMDP_ACT_OVER;
+    return CMDP_ACT_OK;
 }
 
 // normal input
@@ -68,7 +68,7 @@ UTEST(simple, input_space)
     EXPECT_EQ(18, g_arg.age);
     EXPECT_EQ(1.8, g_arg.height);
     EXPECT_STREQ("beijing", g_arg.address);
-    EXPECT_CMD(CMDP_OK, "", "");
+    EXPECT_CMD(0, "", "");
     END_CMD();
 }
 
@@ -81,7 +81,7 @@ UTEST(simple, input_equal_symbol)
     EXPECT_EQ(18, g_arg.age);
     EXPECT_EQ(1.8, g_arg.height);
     EXPECT_STREQ("beijing", g_arg.address);
-    EXPECT_CMD(CMDP_OK, "", "");
+    EXPECT_CMD(0, "", "");
     END_CMD();
 }
 
@@ -94,7 +94,7 @@ UTEST(simple, continuous_short_opt)
     EXPECT_EQ(18, g_arg.age);
     EXPECT_EQ(0.0, g_arg.height);
     EXPECT_EQ(NULL, g_arg.address);
-    EXPECT_CMD(CMDP_OK, "", "");
+    EXPECT_CMD(0, "", "");
     END_CMD();
 }
 
@@ -107,7 +107,7 @@ UTEST(simple, continuous_short_opt_inverse)
     EXPECT_EQ(18, g_arg.age);
     EXPECT_EQ(0.0, g_arg.height);
     EXPECT_EQ(NULL, g_arg.address);
-    EXPECT_CMD(CMDP_OK, "", "");
+    EXPECT_CMD(0, "", "");
     END_CMD();
 }
 
@@ -121,7 +121,7 @@ UTEST(simple, input_x2)
     EXPECT_EQ(18, g_arg.age);
     EXPECT_EQ(1.8, g_arg.height);
     EXPECT_STREQ("beijing", g_arg.address);
-    EXPECT_CMD(CMDP_OK, "", "");
+    EXPECT_CMD(0, "", "");
 
     RUN_CMD(&g_command, "--height", "1.7", "-d", "shanghai");
     EXPECT_EQ(NULL, g_arg.name);
@@ -129,7 +129,7 @@ UTEST(simple, input_x2)
     EXPECT_EQ(0, g_arg.age);
     EXPECT_EQ(1.7, g_arg.height);
     EXPECT_STREQ("shanghai", g_arg.address);
-    EXPECT_CMD(CMDP_OK, "", "");
+    EXPECT_CMD(0, "", "");
 
     END_CMD();
 }
@@ -139,7 +139,7 @@ UTEST(simple, dash_name)
     START_CMD();
     RUN_CMD(&g_command, "--name", "--hello");
     EXPECT_STREQ("--hello", g_arg.name);
-    EXPECT_CMD(CMDP_OK, "", "");
+    EXPECT_CMD(0, "", "");
     END_CMD();
 }
 
@@ -149,7 +149,7 @@ UTEST(simple, unknown_short_option)
 {
     START_CMD();
     RUN_CMD(&g_command, "-u");
-    EXPECT_CMD(CMDP_FAIL, "", "Unknown option -u.\n");
+    EXPECT_CMD(1, "", "Unknown option -u.\n");
     END_CMD();
 }
 
@@ -157,7 +157,7 @@ UTEST(simple, unknown_long_option)
 {
     START_CMD();
     RUN_CMD(&g_command, "--unknown");
-    EXPECT_CMD(CMDP_FAIL, "", "Unknown option --unknown.\n");
+    EXPECT_CMD(1, "", "Unknown option --unknown.\n");
     END_CMD();
 }
 
@@ -165,7 +165,7 @@ UTEST(simple, require_short_arg)
 {
     START_CMD();
     RUN_CMD(&g_command, "-a");
-    EXPECT_CMD(CMDP_FAIL, "", "Option -a require args.\n");
+    EXPECT_CMD(1, "", "Option -a require args.\n");
     END_CMD();
 }
 
@@ -173,7 +173,7 @@ UTEST(simple, require_short_arg_cont)
 {
     START_CMD();
     RUN_CMD(&g_command, "-sa");
-    EXPECT_CMD(CMDP_FAIL, "", "Option -a require args.\n");
+    EXPECT_CMD(1, "", "Option -a require args.\n");
     END_CMD();
 }
 
@@ -181,7 +181,7 @@ UTEST(simple, require_long_arg)
 {
     START_CMD();
     RUN_CMD(&g_command, "--name");
-    EXPECT_CMD(CMDP_FAIL, "", "Option --name require args.\n");
+    EXPECT_CMD(1, "", "Option --name require args.\n");
     END_CMD();
 }
 
@@ -189,7 +189,7 @@ UTEST(simple, parse_not_int)
 {
     START_CMD();
     RUN_CMD(&g_command, "--age", "123abc");
-    EXPECT_CMD(CMDP_FAIL, "", "Parse int failed: 123abc.\n");
+    EXPECT_CMD(1, "", "Parse int failed: 123abc.\n");
     END_CMD();
 }
 
@@ -197,7 +197,7 @@ UTEST(simple, parse_not_float)
 {
     START_CMD();
     RUN_CMD(&g_command, "--height", "123.abc");
-    EXPECT_CMD(CMDP_FAIL, "", "Parse float failed: 123.abc.\n");
+    EXPECT_CMD(1, "", "Parse float failed: 123.abc.\n");
     END_CMD();
 }
 
@@ -205,7 +205,7 @@ UTEST(simple, parse_repeat_option_short)
 {
     START_CMD();
     RUN_CMD(&g_command, "-s", "-s");
-    EXPECT_CMD(CMDP_FAIL, "", "Option -s repeat.\n");
+    EXPECT_CMD(1, "", "Option -s repeat.\n");
     END_CMD();
 }
 
@@ -213,7 +213,7 @@ UTEST(simple, parse_repeat_option_long)
 {
     START_CMD();
     RUN_CMD(&g_command, "--student", "--student");
-    EXPECT_CMD(CMDP_FAIL, "", "Option --student repeat.\n");
+    EXPECT_CMD(1, "", "Option --student repeat.\n");
     END_CMD();
 }
 
@@ -223,7 +223,7 @@ UTEST(simple, help__void)
 {
     START_CMD();
     RUN_CMD(&g_command, );
-    EXPECT_CMD(CMDP_OK, g_expect_help, "");
+    EXPECT_CMD(0, g_expect_help, "");
     END_CMD();
 }
 
@@ -231,7 +231,7 @@ UTEST(simple, help__h)
 {
     START_CMD();
     RUN_CMD(&g_command, "-h");
-    EXPECT_CMD(CMDP_OK, g_expect_help, "");
+    EXPECT_CMD(0, g_expect_help, "");
     END_CMD();
 }
 
@@ -239,6 +239,6 @@ UTEST(simple, help__help)
 {
     START_CMD();
     RUN_CMD(&g_command, "--help");
-    EXPECT_CMD(CMDP_OK, g_expect_help, "");
+    EXPECT_CMD(0, g_expect_help, "");
     END_CMD();
 }

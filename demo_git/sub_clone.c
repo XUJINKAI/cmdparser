@@ -28,7 +28,7 @@ static cmdp_action_t cb_clone(cmdp_process_param_st *params)
     if (params->argc == 0)
     {
         fprintf(stderr, "fatal: You must specify a repository to clone.\n\n");
-        return CMDP_ACT_FAIL | CMDP_ACT_SHOW_HELP;
+        return CMDP_ACT_ERROR | CMDP_ACT_SHOW_HELP;
     }
 
     char *repo = NULL;
@@ -47,7 +47,7 @@ static cmdp_action_t cb_clone(cmdp_process_param_st *params)
     else
     {
         fprintf(stderr, "fatal: too many arguments\n\n");
-        return CMDP_ACT_FAIL | CMDP_ACT_SHOW_HELP;
+        return CMDP_ACT_ERROR | CMDP_ACT_SHOW_HELP;
     }
 
     printf("verbose: %d\n", arg_clone.verbose);
@@ -56,5 +56,5 @@ static cmdp_action_t cb_clone(cmdp_process_param_st *params)
     printf("repo: %s\n", repo);
     printf("dir: %s\n", dir);
 
-    return CMDP_ACT_OVER;
+    return CMDP_ACT_OK;
 }

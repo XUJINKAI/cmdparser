@@ -50,7 +50,7 @@ static cmdp_action_t cb_top_level(cmdp_process_param_st *params)
     if (arg_top.version)
     {
         printf("git version cmdparser by XUJINKAI\n");
-        return CMDP_ACT_OVER;
+        return CMDP_ACT_OK;
     }
     else if (params->argc == 0)
     {

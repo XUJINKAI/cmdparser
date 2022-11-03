@@ -36,7 +36,7 @@ UTEST(help_option, NULL__h)
 {
     __START(0, NULL);
     RUN_CMD(&g_command, "-h");
-    EXPECT_CMD(CMDP_FAIL, "", "Unknown option -h.\n");
+    EXPECT_CMD(1, "", "Unknown option -h.\n");
     __END();
 }
 
@@ -44,7 +44,7 @@ UTEST(help_option, NULL__help)
 {
     __START(0, NULL);
     RUN_CMD(&g_command, "--help");
-    EXPECT_CMD(CMDP_FAIL, "", "Unknown option --help.\n");
+    EXPECT_CMD(1, "", "Unknown option --help.\n");
     __END();
 }
 
@@ -53,7 +53,7 @@ UTEST(help_option, custom__h)
 {
     __START('?', "?");
     RUN_CMD(&g_command, "-?");
-    EXPECT_CMD(CMDP_OK, g_main_help, "");
+    EXPECT_CMD(0, g_main_help, "");
     __END();
 }
 
@@ -61,6 +61,6 @@ UTEST(help_option, custom__help)
 {
     __START('?', "?");
     RUN_CMD(&g_command, "--?");
-    EXPECT_CMD(CMDP_OK, g_main_help, "");
+    EXPECT_CMD(0, g_main_help, "");
     __END();
 }

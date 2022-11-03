@@ -31,7 +31,7 @@ UTEST(sub_alias, void)
 {
     START_CMD();
     RUN_CMD(&g_command, );
-    EXPECT_CMD(CMDP_OK, g_App_help, "");
+    EXPECT_CMD(0, g_App_help, "");
     END_CMD();
 }
 
@@ -39,7 +39,7 @@ UTEST(sub_alias, r)
 {
     START_CMD();
     RUN_CMD(&g_command, "r");
-    EXPECT_CMD(CMDP_OK, g_run_help, "");
+    EXPECT_CMD(0, g_run_help, "");
     END_CMD();
 }
 
@@ -47,7 +47,7 @@ UTEST(sub_alias, r_a)
 {
     START_CMD();
     RUN_CMD(&g_command, "r", "a");
-    EXPECT_CMD(CMDP_OK, "", "");
+    EXPECT_CMD(0, "", "");
     END_CMD();
 }
 
@@ -55,6 +55,6 @@ UTEST(sub_alias, r_b)
 {
     START_CMD();
     RUN_CMD(&g_command, "r", "b");
-    EXPECT_CMD(CMDP_FAIL, "", "Unknown command b.\n");
+    EXPECT_CMD(1, "", "Unknown command b.\n");
     END_CMD();
 }

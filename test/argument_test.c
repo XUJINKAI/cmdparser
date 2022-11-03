@@ -36,7 +36,7 @@ static cmdp_action_t g_process(cmdp_process_param_st *params)
         fprintf(params->out_stream, ",%zu:%s", i, params->argv[i]);
     }
 
-    return CMDP_ACT_OVER;
+    return CMDP_ACT_OK;
 }
 
 UTEST(argument, simple)

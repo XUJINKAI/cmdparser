@@ -41,7 +41,7 @@ UTEST(chinese, doc)
 {
     __START();
     RUN_CMD(&g_command, );
-    EXPECT_CMD(CMDP_OK, g_expect_help, "");
+    EXPECT_CMD(0, g_expect_help, "");
     __END();
 }
 
@@ -49,7 +49,7 @@ UTEST(chinese, error_unknown_command)
 {
     __START();
     RUN_CMD(&g_command, "unknown");
-    EXPECT_CMD(CMDP_FAIL, "", "未知命令: unknown.\n");
+    EXPECT_CMD(1, "", "未知命令: unknown.\n");
     __END();
 }
 
@@ -57,7 +57,7 @@ UTEST(chinese, error_unknown_short_opt)
 {
     __START();
     RUN_CMD(&g_command, "-u");
-    EXPECT_CMD(CMDP_FAIL, "", "未知选项: -u.\n");
+    EXPECT_CMD(1, "", "未知选项: -u.\n");
     __END();
 }
 
@@ -65,7 +65,7 @@ UTEST(chinese, error_unknown_long_opt)
 {
     __START();
     RUN_CMD(&g_command, "--unknown");
-    EXPECT_CMD(CMDP_FAIL, "", "未知选项: --unknown.\n");
+    EXPECT_CMD(1, "", "未知选项: --unknown.\n");
     __END();
 }
 
@@ -73,7 +73,7 @@ UTEST(chinese, error_require_arg_short)
 {
     __START();
     RUN_CMD(&g_command, "-n");
-    EXPECT_CMD(CMDP_FAIL, "", "选项-n需要参数.\n");
+    EXPECT_CMD(1, "", "选项-n需要参数.\n");
     __END();
 }
 
@@ -81,7 +81,7 @@ UTEST(chinese, error_require_arg_long)
 {
     __START();
     RUN_CMD(&g_command, "--name");
-    EXPECT_CMD(CMDP_FAIL, "", "选项--name需要参数.\n");
+    EXPECT_CMD(1, "", "选项--name需要参数.\n");
     __END();
 }
 
@@ -89,7 +89,7 @@ UTEST(chinese, error_parse_int)
 {
     __START();
     RUN_CMD(&g_command, "--age", "1.234");
-    EXPECT_CMD(CMDP_FAIL, "", "解析整数失败: 1.234.\n");
+    EXPECT_CMD(1, "", "解析整数失败: 1.234.\n");
     __END();
 }
 
@@ -97,7 +97,7 @@ UTEST(chinese, error_parse_float)
 {
     __START();
     RUN_CMD(&g_command, "--height", "1.234a");
-    EXPECT_CMD(CMDP_FAIL, "", "解析数字失败: 1.234a.\n");
+    EXPECT_CMD(1, "", "解析数字失败: 1.234a.\n");
     __END();
 }
 
@@ -105,6 +105,6 @@ UTEST(chinese, error_repeat_option)
 {
     __START();
     RUN_CMD(&g_command, "--name", "name", "--name", "name");
-    EXPECT_CMD(CMDP_FAIL, "", "重复选项: --name.\n");
+    EXPECT_CMD(1, "", "重复选项: --name.\n");
     __END();
 }

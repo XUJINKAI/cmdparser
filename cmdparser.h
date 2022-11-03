@@ -17,20 +17,14 @@ LICENSE: MIT
 #include <stdio.h>
 
 
-typedef enum cmdp_result_t
-{
-    CMDP_OK   = 0,
-    CMDP_FAIL = 1,
-} cmdp_result_t;
-
 typedef enum cmdp_action_t
 {
     // continue parse sub commands (if have)
     CMDP_ACT_CONTINUE = 0,
-    // stop parse sub commands, return OK
-    CMDP_ACT_OVER,
-    // stop parse sub commands, return FAIL
-    CMDP_ACT_FAIL,
+    // stop parse sub commands, return 0
+    CMDP_ACT_OK,
+    // stop parse sub commands, return error code (default 1)
+    CMDP_ACT_ERROR,
 
     // [FLAG] show current command's message
     CMDP_ACT_SHOW_HELP = 0x10000,
@@ -75,6 +69,12 @@ typedef struct cmdp_process_param_st
     int sub_level;    // sub-command level, 0 is main command
     FILE *out_stream; // output stream in global context
     FILE *err_stream; // error stream in global context
+
+    /* 
+    [out] error code, default 1
+    if return CMDP_ACT_ERROR, cmdparser will return this error code
+     */
+    int error_code;
 } cmdp_process_param_st;
 
 
@@ -99,15 +99,15 @@ struct cmdp_command_st
 
     // hide or disable
     cmdp_flag_t (*fn_flag)();
-
     // shortcut for name, e.g. "s, state        Show current state"
     char *alias_name;
-
     /* multi_line document */
     char *doc_tail;
 
     // private, used for global options
     cmdp_command_st *__parent;
+    int __flag;
+#define __CMDP_CMD_IS_PARSED 0x01
 };
 
 struct cmdp_option_st
@@ -149,7 +149,7 @@ int main(int argc, char**argv) {
     return cmdp_run(argc - 1, argv + 1, &root_command);
 }
  */
-CMDP_EXTERN cmdp_result_t cmdp_run(int argc, char **argv, cmdp_command_st *root_command);
+CMDP_EXTERN int cmdp_run(int argc, char **argv, cmdp_command_st *root_command);
 
 
 #define CMDP_DOC(document)                                                                                             \
