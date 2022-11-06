@@ -120,7 +120,10 @@ static void default_doc_gen_options_handler(FILE *fp, cmdp_option_st *options)
     {
         if (n->fn_flag)
         {
-            cmdp_flag_t flag = n->fn_flag();
+            cmdp_flag_param_st flag_params = {
+                .opt = n,
+            };
+            cmdp_flag_t flag = n->fn_flag(&flag_params);
             if (HAS_FLAG(flag, CMDP_FLAG_HIDE) || HAS_FLAG(flag, CMDP_FLAG_DISABLE))
             {
                 continue;
@@ -218,7 +221,10 @@ static void default_doc_gen_command_handler(FILE *fp, cmdp_command_st *command)
             cmdp_command_st *n = command->sub_commands[i];
             if (n->fn_flag)
             {
-                cmdp_flag_t flag = n->fn_flag();
+                cmdp_flag_param_st flag_params = {
+                    .cmd = n,
+                };
+                cmdp_flag_t flag = n->fn_flag(&flag_params);
                 if (HAS_FLAG(flag, CMDP_FLAG_HIDE) || HAS_FLAG(flag, CMDP_FLAG_DISABLE))
                 {
                     continue;
@@ -288,7 +294,10 @@ static void cmdp_fprint_all_documents_recursive(FILE *fp, cmdp_command_st *cmdp,
 
         if (p->fn_flag)
         {
-            cmdp_flag_t flag = p->fn_flag();
+            cmdp_flag_param_st flag_params = {
+                .cmd = p,
+            };
+            cmdp_flag_t flag = p->fn_flag(&flag_params);
             if (HAS_FLAG(flag, CMDP_FLAG_HIDE) || HAS_FLAG(flag, CMDP_FLAG_DISABLE))
             {
                 continue;
@@ -319,9 +328,15 @@ static cmdp_option_st *find_option(int short_option, char *long_option, cmdp_com
         if ((short_option != 0 && p->short_option != 0 && p->short_option == short_option) ||
             (long_option != NULL && p->long_option != NULL && strcmp(p->long_option, long_option) == 0))
         {
-            if (p->fn_flag && HAS_FLAG(p->fn_flag(), CMDP_FLAG_DISABLE))
+            if (p->fn_flag)
             {
-                return NULL;
+                cmdp_flag_param_st flag_params = {
+                    .opt = p,
+                };
+                if (HAS_FLAG(p->fn_flag(&flag_params), CMDP_FLAG_DISABLE))
+                {
+                    return NULL;
+                }
             }
             return p;
         }
@@ -355,9 +370,16 @@ static cmdp_command_st *find_command(char *command_name, cmdp_command_st **comma
         }
         if (match_name || match_alias || match_variant)
         {
-            if (p->fn_flag && HAS_FLAG(p->fn_flag(), CMDP_FLAG_DISABLE))
+            if (p->fn_flag)
             {
-                return NULL;
+                cmdp_flag_param_st flag_params = {
+                    .cmd       = p,
+                    .call_name = command_name,
+                };
+                if (HAS_FLAG(p->fn_flag(&flag_params), CMDP_FLAG_DISABLE))
+                {
+                    return NULL;
+                }
             }
             return p;
         }
@@ -762,8 +784,9 @@ static void cmdp_setup(cmdp_command_st *cmdp, cmdp_command_st *parent)
 // expose
 // ============================================================================
 
-cmdp_flag_t cmdp_flag_always_hide()
+cmdp_flag_t cmdp_flag_always_hide(cmdp_flag_param_st *params)
 {
+    (void)params;
     return CMDP_FLAG_HIDE;
 }
 

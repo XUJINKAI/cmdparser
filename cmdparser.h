@@ -72,6 +72,13 @@ typedef struct cmdp_process_param_st
     int error_code;
 } cmdp_process_param_st;
 
+typedef struct cmdp_flag_param_st
+{
+    cmdp_command_st *cmd; // could be NULL
+    cmdp_option_st *opt;  // could be NULL
+    char *call_name;      // could be NULL
+} cmdp_flag_param_st;
+
 
 struct cmdp_command_st
 {
@@ -89,9 +96,9 @@ struct cmdp_command_st
 
     // run after all options parsed
     cmdp_action_t (*fn_process)(cmdp_process_param_st *params);
-
     // hide or disable
-    cmdp_flag_t (*fn_flag)();
+    cmdp_flag_t (*fn_flag)(cmdp_flag_param_st *params);
+
     /* multi_line document */
     char *doc_tail;
     // shortcut for name, e.g. "s, state        Show current state"
@@ -122,7 +129,7 @@ struct cmdp_option_st
     char *type_name;
 
     // hide or disable
-    cmdp_flag_t (*fn_flag)();
+    cmdp_flag_t (*fn_flag)(cmdp_flag_param_st *params);
 
     // private
     int __flag;
@@ -130,7 +137,7 @@ struct cmdp_option_st
 };
 
 #define CMDP_HIDE .fn_flag = cmdp_flag_always_hide
-CMDP_EXTERN cmdp_flag_t cmdp_flag_always_hide();
+CMDP_EXTERN cmdp_flag_t cmdp_flag_always_hide(cmdp_flag_param_st *params);
 
 /* 
 run arguments with a cmdp_command_st

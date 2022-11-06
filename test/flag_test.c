@@ -18,11 +18,11 @@ static cmdp_action_t cb_process(cmdp_process_param_st *params)
     LOG_INFO("is_verbose: %d\n", g_arg.g_is_verbose);
     return CMDP_ACT_OK;
 }
-static cmdp_flag_t cb_flag_opt_verbose(cmdp_option_st *self)
+static cmdp_flag_t cb_flag_opt_verbose(cmdp_flag_param_st *params)
 {
     return g_flag_opt_verbose;
 }
-static cmdp_flag_t cb_flag_cmd_run(cmdp_command_st *self)
+static cmdp_flag_t cb_flag_cmd_run(cmdp_flag_param_st *params)
 {
     return g_flag_cmd_run;
 }
