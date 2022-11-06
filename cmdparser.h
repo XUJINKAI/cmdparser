@@ -19,11 +19,11 @@ LICENSE: MIT
 
 typedef enum cmdp_action_t
 {
-    // continue parse sub commands (if have)
+    // continue run sub commands (if have)
     CMDP_ACT_CONTINUE = 0,
-    // stop parse sub commands, return 0
+    // stop run sub commands, return 0
     CMDP_ACT_OK,
-    // stop parse sub commands, return error code (default 1)
+    // stop run sub commands, return error code (default 1)
     CMDP_ACT_ERROR,
 
     // [FLAG] show current command's message
@@ -50,25 +50,16 @@ typedef enum cmdp_type_t
 typedef struct cmdp_option_st cmdp_option_st;
 typedef struct cmdp_command_st cmdp_command_st;
 
-typedef struct cmdp_before_param_st
-{
-    int argc;
-    char **argv;
-    cmdp_command_st *cmdp;
-    int sub_level;    // sub-command level, 0 is main command
-    FILE *out_stream; // output stream in global context
-    FILE *err_stream; // error stream in global context
-} cmdp_before_param_st;
-
 typedef struct cmdp_process_param_st
 {
     int argc;
     char **argv;
-    cmdp_command_st *cmdp;
-    int opts;         // parsed options count
-    int sub_level;    // sub-command level, 0 is main command
-    FILE *out_stream; // output stream in global context
-    FILE *err_stream; // error stream in global context
+    cmdp_command_st *current; // current processed command
+    cmdp_command_st *next;    // sub command to be processed
+    int opts;                 // parsed options count
+    int sub_level;            // sub-command level, 0 is main command
+    FILE *out_stream;         // output stream in global context
+    FILE *err_stream;         // error stream in global context
 
     /* 
     [out] error code, default 1
@@ -92,9 +83,7 @@ struct cmdp_command_st
     /* end with NULL */
     cmdp_command_st **sub_commands;
 
-    // run before command's options parse
-    void (*fn_before)(cmdp_before_param_st *params);
-    // run after command's options parse, before sub-commands run
+    // run after all options parsed
     cmdp_action_t (*fn_process)(cmdp_process_param_st *params);
 
     // hide or disable
@@ -120,7 +109,8 @@ struct cmdp_option_st
     cmdp_type_t type;
     // variable
     void *output_ptr;
-    // (if not bool) e.g. "--long=<type_name>"
+    // input placeholder (if not bool)
+    // e.g. set to "<value>" for "--long <value>"
     char *type_name;
 
     // hide or disable
@@ -136,6 +126,7 @@ CMDP_EXTERN cmdp_flag_t cmdp_flag_always_hide();
 
 CMDP_EXTERN void cmdp_fprint_options_doc(FILE *fp, cmdp_option_st *options);
 CMDP_EXTERN void cmdp_fprint_command_doc(FILE *fp, cmdp_command_st *command);
+// TODO generate markdown doc
 CMDP_EXTERN void cmdp_fprint_all_documents(FILE *fp, cmdp_command_st *command);
 
 // print help message to output stream

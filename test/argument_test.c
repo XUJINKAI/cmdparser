@@ -6,7 +6,6 @@ static struct
     bool opt_b;
 } g_arg = {0};
 
-static void g_before(cmdp_before_param_st *params);
 static cmdp_action_t g_process(cmdp_process_param_st *params);
 
 static cmdp_command_st g_command = {
@@ -16,14 +15,9 @@ static cmdp_command_st g_command = {
             {'b', NULL, "option b", CMDP_TYPE_BOOL, &g_arg.opt_b},
             {0},
         },
-    .fn_before  = g_before,
     .fn_process = g_process,
 };
 
-static void g_before(cmdp_before_param_st *params)
-{
-    memset(&g_arg, 0, sizeof(g_arg));
-}
 static cmdp_action_t g_process(cmdp_process_param_st *params)
 {
     if (params->argc == 0 && params->opts == 0)

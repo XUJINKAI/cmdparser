@@ -9,7 +9,6 @@ static struct
     char *address;
 } g_arg = {0};
 
-static void g_before(cmdp_before_param_st *params);
 static cmdp_action_t g_process(cmdp_process_param_st *params);
 
 static cmdp_command_st g_command = {
@@ -23,7 +22,6 @@ static cmdp_command_st g_command = {
             {'d', NULL, "Input Address", CMDP_TYPE_STRING_PTR, &g_arg.address, "<ADDRESS>"},
             {0},
         },
-    .fn_before  = g_before,
     .fn_process = g_process,
 };
 
@@ -34,10 +32,6 @@ static char *g_expect_help = "Student struct.\n\n"
                              "  --height <HEIGHT>          Input Height\n"
                              "  -d <ADDRESS>               Input Address\n";
 
-static void g_before(cmdp_before_param_st *params)
-{
-    memset(&g_arg, 0, sizeof(g_arg));
-}
 static cmdp_action_t g_process(cmdp_process_param_st *params)
 {
     LOG_INFO("name: %s\n", g_arg.name);
@@ -58,6 +52,23 @@ static cmdp_action_t g_process(cmdp_process_param_st *params)
 }
 
 // normal input
+
+UTEST(simple, init_output__expect_NULL)
+{
+    g_arg.name       = "test";
+    g_arg.is_student = true;
+    g_arg.age        = 18;
+    g_arg.height     = 1.8;
+    g_arg.address    = "test address";
+    START_CMD();
+    RUN_CMD(&g_command, );
+    END_CMD();
+    EXPECT_EQ(NULL, g_arg.name);
+    EXPECT_EQ(false, g_arg.is_student);
+    EXPECT_EQ(0, g_arg.age);
+    EXPECT_EQ(0, g_arg.height);
+    EXPECT_EQ(NULL, g_arg.address);
+}
 
 UTEST(simple, input_space)
 {

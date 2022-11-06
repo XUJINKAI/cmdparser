@@ -19,14 +19,10 @@ static cmdp_action_t g_action[10]; // default: CMDP_ACT_CONTINUE
     EXPECT_CMD(code, out, err);                                                                                        \
     EXPECT_STREQ(procedure, g_procedure);
 
-static void cb_before(cmdp_before_param_st *params)
-{
-    __PROCEDURE_CAT("L%db ", params->sub_level);
-}
 static cmdp_action_t cb_process(cmdp_process_param_st *params)
 {
-    __PROCEDURE_CAT("L%dp ", params->sub_level);
-    if (params->argc == 0)
+    __PROCEDURE_CAT("L%d ", params->sub_level);
+    if (params->next == NULL && params->argc == 0 && params->opts == 0)
     {
         return CMDP_ACT_SHOW_HELP;
     }
@@ -37,7 +33,6 @@ static cmdp_command_st g_command = {
     .name       = "L0",
     .desc       = "L0 desc",
     .doc        = "L0 doc\n",
-    .fn_before  = cb_before,
     .fn_process = cb_process,
     .sub_commands =
         (cmdp_command_st *[]){
@@ -45,7 +40,6 @@ static cmdp_command_st g_command = {
                 .name       = "L1",
                 .desc       = "L1 desc",
                 .doc        = "L1 doc\n",
-                .fn_before  = cb_before,
                 .fn_process = cb_process,
                 .sub_commands =
                     (cmdp_command_st *[]){
@@ -53,7 +47,6 @@ static cmdp_command_st g_command = {
                             .name       = "L2",
                             .desc       = "L2 desc",
                             .doc        = "L2 doc\n",
-                            .fn_before  = cb_before,
                             .fn_process = cb_process,
                         },
                         NULL,
@@ -73,7 +66,7 @@ UTEST(nested_procedure, L0)
 {
     __START();
     RUN_CMD(&g_command, );
-    __EXPECT(0, g_L0_help, "", "L0b L0p ");
+    __EXPECT(0, g_L0_help, "", "L0 ");
     __END();
 }
 
@@ -81,7 +74,7 @@ UTEST(nested_procedure, L1)
 {
     __START();
     RUN_CMD(&g_command, "L1");
-    __EXPECT(0, g_L1_help, "", "L0b L0p L1b L1p ");
+    __EXPECT(0, g_L1_help, "", "L0 L1 ");
     __END();
 }
 
@@ -89,7 +82,7 @@ UTEST(nested_procedure, L1_L2)
 {
     __START();
     RUN_CMD(&g_command, "L1", "L2");
-    __EXPECT(0, g_L2_help, "", "L0b L0p L1b L1p L2b L2p ");
+    __EXPECT(0, g_L2_help, "", "L0 L1 L2 ");
     __END();
 }
 
@@ -98,7 +91,7 @@ UTEST(nested_procedure, L0_other)
 {
     __START();
     RUN_CMD(&g_command, "other");
-    __EXPECT(1, "", err_other, "L0b L0p ");
+    __EXPECT(1, "", err_other, "");
     __END();
 }
 
@@ -106,7 +99,7 @@ UTEST(nested_procedure, L1_other)
 {
     __START();
     RUN_CMD(&g_command, "L1", "other");
-    __EXPECT(1, "", err_other, "L0b L0p L1b L1p ");
+    __EXPECT(1, "", err_other, "");
     __END();
 }
 
@@ -114,7 +107,7 @@ UTEST(nested_procedure, L1_L2_other)
 {
     __START();
     RUN_CMD(&g_command, "L1", "L2", "other");
-    __EXPECT(0, "", "", "L0b L0p L1b L1p L2b L2p ");
+    __EXPECT(0, "", "", "L0 L1 L2 ");
     __END();
 }
 
@@ -124,7 +117,7 @@ UTEST(nested_procedure, L1_L2_params__L0_over)
     __START();
     __ACTION_SET(0, CMDP_ACT_OK);
     RUN_CMD(&g_command, "L1", "L2", "other");
-    __EXPECT(0, "", "", "L0b L0p ");
+    __EXPECT(0, "", "", "L0 ");
     __END();
 }
 
@@ -133,7 +126,7 @@ UTEST(nested_procedure, L1_L2_params__L0_fail)
     __START();
     __ACTION_SET(0, CMDP_ACT_ERROR);
     RUN_CMD(&g_command, "L1", "L2", "other");
-    __EXPECT(1, "", "", "L0b L0p ");
+    __EXPECT(1, "", "", "L0 ");
     __END();
 }
 
@@ -142,7 +135,7 @@ UTEST(nested_procedure, L1_L2_params__L0_over_help)
     __START();
     __ACTION_SET(0, CMDP_ACT_OK | CMDP_ACT_SHOW_HELP);
     RUN_CMD(&g_command, "L1", "L2", "other");
-    __EXPECT(0, g_L0_help, "", "L0b L0p ");
+    __EXPECT(0, g_L0_help, "", "L0 ");
     __END();
 }
 
@@ -151,6 +144,6 @@ UTEST(nested_procedure, L1_L2_params__L0_fail_help)
     __START();
     __ACTION_SET(0, CMDP_ACT_ERROR | CMDP_ACT_SHOW_HELP);
     RUN_CMD(&g_command, "L1", "L2", "other");
-    __EXPECT(1, "", g_L0_help, "L0b L0p ");
+    __EXPECT(1, "", g_L0_help, "L0 ");
     __END();
 }

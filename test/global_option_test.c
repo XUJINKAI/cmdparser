@@ -14,9 +14,7 @@ static struct
     char *opt_input;
 } arg_sub = {0};
 
-static void global_before(cmdp_before_param_st *params);
 static cmdp_action_t global_process(cmdp_process_param_st *params);
-static void sub_before(cmdp_before_param_st *params);
 static cmdp_action_t sub_process(cmdp_process_param_st *params);
 
 static cmdp_command_st g_command = {
@@ -38,28 +36,18 @@ static cmdp_command_st g_command = {
                         {'i', "input", "Input option", CMDP_TYPE_STRING_PTR, &arg_sub.opt_input},
                         {0},
                     },
-                .fn_before  = sub_before,
                 .fn_process = sub_process,
             },
             NULL,
         },
-    .fn_before  = global_before,
     .fn_process = global_process,
 };
 
-static void global_before(cmdp_before_param_st *params)
-{
-    memset(&arg_global, 0, sizeof(arg_global));
-}
 static cmdp_action_t global_process(cmdp_process_param_st *params)
 {
     fprintf(params->out_stream, "Global: verbose=%d, debug=%d, work_dir=%s\n", arg_global.g_is_verbose,
             arg_global.g_is_debug, arg_global.work_dir ? arg_global.work_dir : "");
     return CMDP_ACT_CONTINUE;
-}
-static void sub_before(cmdp_before_param_st *params)
-{
-    memset(&arg_sub, 0, sizeof(arg_sub));
 }
 static cmdp_action_t sub_process(cmdp_process_param_st *params)
 {

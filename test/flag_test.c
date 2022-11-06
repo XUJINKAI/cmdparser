@@ -13,10 +13,6 @@ static cmdp_flag_t g_flag_cmd_run     = CMDP_FLAG_NONE;
     g_flag_opt_verbose = CMDP_FLAG_NONE;                                                                               \
     g_flag_cmd_run     = CMDP_FLAG_NONE;
 
-static void cb_before(cmdp_before_param_st *params)
-{
-    memset(&g_arg, 0, sizeof(g_arg));
-}
 static cmdp_action_t cb_process(cmdp_process_param_st *params)
 {
     LOG_INFO("is_verbose: %d\n", g_arg.g_is_verbose);
@@ -32,7 +28,6 @@ static cmdp_flag_t cb_flag_cmd_run(cmdp_command_st *self)
 }
 
 static cmdp_command_st g_command = {
-    .fn_before = cb_before,
     .options =
         (cmdp_option_st[]){
             {'v', "verbose", "Verbose Log", CMDP_TYPE_BOOL, &g_arg.g_is_verbose, .fn_flag = cb_flag_opt_verbose},
