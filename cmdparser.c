@@ -338,12 +338,22 @@ static cmdp_command_st *find_command(char *command_name, cmdp_command_st **comma
     for (int i = 0; i < count; i++)
     {
         cmdp_command_st *p = commands[i];
-        if (p->name == NULL)
+        bool match_name    = p->name != NULL && strcmp(command_name, p->name) == 0;
+        bool match_alias   = p->alias_name != NULL && (strcmp(command_name, p->alias_name) == 0);
+        bool match_variant = false;
+        if (p->variant_cmds != NULL)
         {
-            continue;
+            int variant_count = nonzero_countof(p->variant_cmds, sizeof(char *));
+            for (int j = 0; j < variant_count; j++)
+            {
+                if (strcmp(command_name, p->variant_cmds[j]) == 0)
+                {
+                    match_variant = true;
+                    break;
+                }
+            }
         }
-
-        if (strcmp(command_name, p->name) == 0 || (p->alias_name != NULL && (strcmp(command_name, p->alias_name) == 0)))
+        if (match_name || match_alias || match_variant)
         {
             if (p->fn_flag && HAS_FLAG(p->fn_flag(), CMDP_FLAG_DISABLE))
             {
@@ -594,8 +604,9 @@ static int cmdp_parse_args(int argc, char **argv, cmdp_command_st *cmdp, cmdp_ct
             return _parse_ret_1;
 #endif
         }
-        find->__flag    = __CMDP_CMD_IS_PARSED;
-        int next_parsed = cmdp_parse_args(argc - arg_index - 1, argv + arg_index + 1, find, ctx, recursive + 1);
+        find->__flag      = __CMDP_CMD_IS_PARSED;
+        find->__call_name = argv[arg_index];
+        int next_parsed   = cmdp_parse_args(argc - arg_index - 1, argv + arg_index + 1, find, ctx, recursive + 1);
         if (next_parsed < 0)
         {
             return next_parsed;
@@ -655,6 +666,7 @@ static int cmdp_run_callback(int argc, char **argv, cmdp_command_st *cmdp, cmdp_
         cmdp_process_param_st fn_process_param = {
             .argc       = argc,
             .argv       = argv,
+            .call_name  = cmdp->__call_name,
             .current    = cmdp,
             .next       = sub_cmd,
             .opts       = parsed_options,
@@ -723,8 +735,9 @@ static void cmdp_setup_option_output(cmdp_option_st *option)
 }
 static void cmdp_setup(cmdp_command_st *cmdp, cmdp_command_st *parent)
 {
-    cmdp->__parent = parent;
-    cmdp->__flag   = 0;
+    cmdp->__parent    = parent;
+    cmdp->__flag      = 0;
+    cmdp->__call_name = NULL;
     if (cmdp->sub_commands)
     {
         int commands_count = nonzero_countof(cmdp->sub_commands, sizeof(cmdp_command_st *));

@@ -12,7 +12,7 @@ Command parser library (C/C++), with highly customizable.
 
 - Follow GNU/POSIX option conversion, short/long option supported
 
-- Nested sub-commands support
+- Nested sub-commands support, and they can share same logic
 
 - Global option supported
 

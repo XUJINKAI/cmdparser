@@ -55,6 +55,9 @@ typedef struct cmdp_process_param_st
 {
     int argc;
     char **argv;
+    // call command name
+    // for cmdp has alias name or variant cmds, value can be different
+    char *call_name;
     cmdp_command_st *current; // current processed command
     cmdp_command_st *next;    // sub command to be processed
     int opts;                 // parsed options count
@@ -89,14 +92,18 @@ struct cmdp_command_st
 
     // hide or disable
     cmdp_flag_t (*fn_flag)();
-    // shortcut for name, e.g. "s, state        Show current state"
-    char *alias_name;
     /* multi_line document */
     char *doc_tail;
+    // shortcut for name, e.g. "s, state        Show current state"
+    char *alias_name;
+    // variant command list, ends with NULL
+    // used for very similar commands, share same options and logic
+    char **variant_cmds;
 
     // private, used for global options
     cmdp_command_st *__parent;
     int __flag;
+    char *__call_name;
 #define __CMDP_CMD_IS_PARSED 0x01
 };
 
