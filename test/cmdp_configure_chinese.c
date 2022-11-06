@@ -1,62 +1,55 @@
 #include "common.h"
 
-static void __err_unknown_command(FILE *fp, cmdp_command_st *cmdp, char *s)
+static void __err_parse_handler(cmdp_error_params_st *params)
 {
-    (void)cmdp;
-    fprintf(fp, "未知命令: %s.\n", s);
-}
-static void __err_unknown_short_opt(FILE *fp, cmdp_command_st *cmdp, char c)
-{
-    (void)cmdp;
-    fprintf(fp, "未知选项: -%c.\n", c);
-}
-static void __err_unknown_long_opt(FILE *fp, cmdp_command_st *cmdp, char *s)
-{
-    (void)cmdp;
-    fprintf(fp, "未知选项: --%s.\n", s);
-}
-static void __err_require_short_opt_arg(FILE *fp, cmdp_command_st *cmdp, char c)
-{
-    (void)cmdp;
-    fprintf(fp, "选项-%c需要参数.\n", c);
-}
-static void __err_require_long_opt_arg(FILE *fp, cmdp_command_st *cmdp, char *s)
-{
-    (void)cmdp;
-    fprintf(fp, "选项--%s需要参数.\n", s);
-}
-static void __err_parse_int(FILE *fp, cmdp_command_st *cmdp, char *s)
-{
-    (void)cmdp;
-    fprintf(fp, "解析整数失败: %s.\n", s);
-}
-static void __err_parse_float(FILE *fp, cmdp_command_st *cmdp, char *s)
-{
-    (void)cmdp;
-    fprintf(fp, "解析数字失败: %s.\n", s);
-}
-static void __err_repeat_option(FILE *fp, cmdp_command_st *cmdp, char c, char *s)
-{
-    (void)cmdp;
-    if (c)
+    switch (params->type)
     {
-        fprintf(fp, "重复选项: -%c.\n", c);
-    }
-    else
-    {
-        fprintf(fp, "重复选项: --%s.\n", s);
+        case CMDP_ERROR_UNKNOWN_COMMAND:
+            fprintf(params->err_stream, "未知命令: %s.\n", params->s);
+            break;
+        case CMDP_ERROR_UNKNOWN_OPTION:
+            if (params->c)
+            {
+                fprintf(params->err_stream, "未知选项: -%c.\n", params->c);
+            }
+            if (params->s)
+            {
+                fprintf(params->err_stream, "未知选项: --%s.\n", params->s);
+            }
+            break;
+        case CMDP_ERROR_MISSING_OPTION_ARG:
+            if (params->c)
+            {
+                fprintf(params->err_stream, "选项-%c需要参数.\n", params->c);
+            }
+            if (params->s)
+            {
+                fprintf(params->err_stream, "选项--%s需要参数.\n", params->s);
+            }
+            break;
+        case CMDP_ERROR_PARSE_INT:
+            fprintf(params->err_stream, "解析整数失败: %s.\n", params->s);
+            break;
+        case CMDP_ERROR_PARSE_DOUBLE:
+            fprintf(params->err_stream, "解析数字失败: %s.\n", params->s);
+            break;
+        case CMDP_ERROR_REPEAT_OPTION:
+            if (params->c)
+            {
+                fprintf(params->err_stream, "重复选项: -%c.\n", params->c);
+            }
+            if (params->s)
+            {
+                fprintf(params->err_stream, "重复选项: --%s.\n", params->s);
+            }
+            break;
+        default:
+            break;
     }
 }
 
 void cmdp_configure_chinese()
 {
-    cmdp_global_config_st *config             = cmdp_get_global_config();
-    config->fn_error_unknown_command          = __err_unknown_command;
-    config->fn_error_unknown_short_option     = __err_unknown_short_opt;
-    config->fn_error_unknown_long_option      = __err_unknown_long_opt;
-    config->fn_error_require_short_option_arg = __err_require_short_opt_arg;
-    config->fn_error_require_long_option_arg  = __err_require_long_opt_arg;
-    config->fn_error_parse_int                = __err_parse_int;
-    config->fn_error_parse_float              = __err_parse_float;
-    config->fn_error_repeat_option            = __err_repeat_option;
+    cmdp_global_config_st *config = cmdp_get_global_config();
+    config->fn_error_parse        = __err_parse_handler;
 }

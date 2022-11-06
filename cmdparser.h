@@ -158,6 +158,26 @@ CMDP_EXTERN int cmdp_run(int argc, char **argv, cmdp_command_st *root_command);
 // global config
 // ===================
 
+typedef enum
+{
+    CMDP_ERROR_NONE = 0,
+    CMDP_ERROR_UNKNOWN_COMMAND,    // s
+    CMDP_ERROR_UNKNOWN_OPTION,     // c or s
+    CMDP_ERROR_MISSING_OPTION_ARG, // c or s
+    CMDP_ERROR_PARSE_INT,          // s
+    CMDP_ERROR_PARSE_DOUBLE,       // s
+    CMDP_ERROR_REPEAT_OPTION,      // c or s
+} CMDP_ERROR_PARSE_TYPE;
+
+typedef struct
+{
+    FILE *err_stream;
+    cmdp_command_st *cmdp;
+    CMDP_ERROR_PARSE_TYPE type;
+    char *s;
+    char c;
+} cmdp_error_params_st;
+
 typedef struct cmdp_global_config_st
 {
     char help_short_option;
@@ -166,14 +186,7 @@ typedef struct cmdp_global_config_st
     void (*fn_doc_gen_options)(FILE *fp, cmdp_option_st *options);
     void (*fn_doc_gen_command)(FILE *fp, cmdp_command_st *command);
 
-    void (*fn_error_unknown_command)(FILE *fp, cmdp_command_st *cmdp, char *s);
-    void (*fn_error_unknown_short_option)(FILE *fp, cmdp_command_st *cmdp, char c);
-    void (*fn_error_unknown_long_option)(FILE *fp, cmdp_command_st *cmdp, char *s);
-    void (*fn_error_require_short_option_arg)(FILE *fp, cmdp_command_st *cmdp, char c);
-    void (*fn_error_require_long_option_arg)(FILE *fp, cmdp_command_st *cmdp, char *s);
-    void (*fn_error_parse_int)(FILE *fp, cmdp_command_st *cmdp, char *s);
-    void (*fn_error_parse_float)(FILE *fp, cmdp_command_st *cmdp, char *s);
-    void (*fn_error_repeat_option)(FILE *fp, cmdp_command_st *cmdp, char c, char *s);
+    void (*fn_error_parse)(cmdp_error_params_st *params);
 
     FILE *out_stream;
     FILE *err_stream;

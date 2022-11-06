@@ -75,85 +75,59 @@ static void reset_global_config(void)
 #define IS_INPUTABLE_KEY(CH)                                                                                           \
     ((((CH) >= 'a') && ((CH) <= 'z')) || (((CH) >= 'A') && ((CH) <= 'Z')) || (((CH) >= '0') && ((CH) <= '9')))
 
-static void error_unknown_command(cmdp_command_st *cmdp, char *s)
+static void error_parse_handler(cmdp_error_params_st *params)
 {
-    if (g_config.fn_error_unknown_command)
+    if (g_config.fn_error_parse)
     {
-        g_config.fn_error_unknown_command(ERR_STREAM, cmdp, s);
+        g_config.fn_error_parse(params);
         return;
     }
-    fprintf(ERR_STREAM, "Unknown command %s.\n", s);
-}
-static void error_unknown_short_option(cmdp_command_st *cmdp, char c)
-{
-    if (g_config.fn_error_unknown_short_option)
+    switch (params->type)
     {
-        g_config.fn_error_unknown_short_option(ERR_STREAM, cmdp, c);
-        return;
-    }
-    fprintf(ERR_STREAM, "Unknown option -%c.\n", c);
-}
-static void error_unknown_long_option(cmdp_command_st *cmdp, char *s)
-{
-    if (g_config.fn_error_unknown_long_option)
-    {
-        g_config.fn_error_unknown_long_option(ERR_STREAM, cmdp, s);
-        return;
-    }
-    fprintf(ERR_STREAM, "Unknown option --%s.\n", s);
-}
-static void error_require_short_option_arg(cmdp_command_st *cmdp, char c)
-{
-    if (g_config.fn_error_require_short_option_arg)
-    {
-        g_config.fn_error_require_short_option_arg(ERR_STREAM, cmdp, c);
-        return;
-    }
-    fprintf(ERR_STREAM, "Option -%c require args.\n", c);
-}
-static void error_require_long_option_arg(cmdp_command_st *cmdp, char *s)
-{
-    if (g_config.fn_error_require_long_option_arg)
-    {
-        g_config.fn_error_require_long_option_arg(ERR_STREAM, cmdp, s);
-        return;
-    }
-    fprintf(ERR_STREAM, "Option --%s require args.\n", s);
-}
-static void error_parse_int(cmdp_command_st *cmdp, char *s)
-{
-    if (g_config.fn_error_parse_int)
-    {
-        g_config.fn_error_parse_int(ERR_STREAM, cmdp, s);
-        return;
-    }
-    fprintf(ERR_STREAM, "Parse int failed: %s.\n", s);
-}
-static void error_parse_float(cmdp_command_st *cmdp, char *s)
-{
-    if (g_config.fn_error_parse_float)
-    {
-        g_config.fn_error_parse_float(ERR_STREAM, cmdp, s);
-        return;
-    }
-    fprintf(ERR_STREAM, "Parse float failed: %s.\n", s);
-}
-static void error_repeat_option(cmdp_command_st *cmdp, char c, char *s)
-{
-    if (g_config.fn_error_repeat_option)
-    {
-        g_config.fn_error_repeat_option(ERR_STREAM, cmdp, c, s);
-        return;
-    }
-    if (c)
-    {
-        fprintf(ERR_STREAM, "Option -%c repeat.\n", c);
-    }
-    if (s)
-    {
-        fprintf(ERR_STREAM, "Option --%s repeat.\n", s);
+        case CMDP_ERROR_UNKNOWN_COMMAND:
+            fprintf(params->err_stream, "Unknown command %s.\n", params->s);
+            break;
+        case CMDP_ERROR_UNKNOWN_OPTION:
+            if (params->c)
+            {
+                fprintf(params->err_stream, "Unknown option -%c.\n", params->c);
+            }
+            if (params->s)
+            {
+                fprintf(params->err_stream, "Unknown option --%s.\n", params->s);
+            }
+            break;
+        case CMDP_ERROR_MISSING_OPTION_ARG:
+            if (params->c)
+            {
+                fprintf(params->err_stream, "Option -%c require args.\n", params->c);
+            }
+            if (params->s)
+            {
+                fprintf(params->err_stream, "Option --%s require args.\n", params->s);
+            }
+            break;
+        case CMDP_ERROR_PARSE_INT:
+            fprintf(params->err_stream, "Parse int failed: %s.\n", params->s);
+            break;
+        case CMDP_ERROR_PARSE_DOUBLE:
+            fprintf(params->err_stream, "Parse float failed: %s.\n", params->s);
+            break;
+        case CMDP_ERROR_REPEAT_OPTION:
+            if (params->c)
+            {
+                fprintf(params->err_stream, "Option -%c repeat.\n", params->c);
+            }
+            if (params->s)
+            {
+                fprintf(params->err_stream, "Option --%s repeat.\n", params->s);
+            }
+            break;
+        default:
+            break;
     }
 }
+
 static void doc_gen_options(FILE *fp, cmdp_option_st *options)
 {
     if (g_config.fn_doc_gen_options)
@@ -500,6 +474,18 @@ static EVAL_CODE eval_option_output(cmdp_option_st *option, char *arg)
 #define _parse_ret_1 (-2)
 static int cmdp_parse_args(int argc, char **argv, cmdp_command_st *cmdp, int recursive)
 {
+    cmdp_error_params_st error_params = {
+        .err_stream = ERR_STREAM,
+        .cmdp       = cmdp,
+    };
+#define __ERROR_HANDLER(_type, _c, _s)                                                                                 \
+    do                                                                                                                 \
+    {                                                                                                                  \
+        error_params.type = _type;                                                                                     \
+        error_params.c    = _c;                                                                                        \
+        error_params.s    = _s;                                                                                        \
+        error_parse_handler(&error_params);                                                                            \
+    } while (0)
     int parsed_options = 0;
     int arg_index      = 0;
     for (; arg_index < argc; arg_index++)
@@ -526,7 +512,7 @@ static int cmdp_parse_args(int argc, char **argv, cmdp_command_st *cmdp, int rec
                 cmdp_option_st *find = find_option(cur_ch, 0, cmdp);
                 if (find == NULL)
                 {
-                    error_unknown_short_option(cmdp, cur_ch);
+                    __ERROR_HANDLER(CMDP_ERROR_UNKNOWN_OPTION, cur_ch, NULL);
                     return _parse_ret_1;
                 }
                 eval_arg  = (eval_code == EVAL_CODE_ARG_USED) ? NULL : next_arg;
@@ -544,16 +530,16 @@ static int cmdp_parse_args(int argc, char **argv, cmdp_command_st *cmdp, int rec
                     arg_index++;
                     break;
                 case EVAL_CODE_ERROR_ARG_NULL:
-                    error_require_short_option_arg(cmdp, cur_ch);
+                    __ERROR_HANDLER(CMDP_ERROR_MISSING_OPTION_ARG, cur_ch, NULL);
                     return _parse_ret_1;
                 case EVAL_CODE_ERROR_PARSE_INT:
-                    error_parse_int(cmdp, eval_arg);
+                    __ERROR_HANDLER(CMDP_ERROR_PARSE_INT, 0, eval_arg);
                     return _parse_ret_1;
                 case EVAL_CODE_ERROR_PARSE_FLOAT:
-                    error_parse_float(cmdp, eval_arg);
+                    __ERROR_HANDLER(CMDP_ERROR_PARSE_DOUBLE, 0, eval_arg);
                     return _parse_ret_1;
                 case EVAL_CODE_ERROR_REPEAT_OPTION:
-                    error_repeat_option(cmdp, cur_ch, NULL);
+                    __ERROR_HANDLER(CMDP_ERROR_REPEAT_OPTION, cur_ch, NULL);
                     return _parse_ret_1;
                 case EVAL_CODE_DONE:
                     break;
@@ -582,7 +568,7 @@ static int cmdp_parse_args(int argc, char **argv, cmdp_command_st *cmdp, int rec
             cmdp_option_st *find = find_option(0, long_option_real, cmdp);
             if (find == NULL)
             {
-                error_unknown_long_option(cmdp, long_option_real);
+                __ERROR_HANDLER(CMDP_ERROR_UNKNOWN_OPTION, 0, long_option_real);
                 return _parse_ret_1;
             }
             char *eval_arg      = (eq_ptr == NULL) ? next_arg : eq_ptr + 1;
@@ -597,16 +583,16 @@ static int cmdp_parse_args(int argc, char **argv, cmdp_command_st *cmdp, int rec
                     }
                     break;
                 case EVAL_CODE_ERROR_ARG_NULL:
-                    error_require_long_option_arg(cmdp, long_option_real);
+                    __ERROR_HANDLER(CMDP_ERROR_MISSING_OPTION_ARG, 0, long_option_real);
                     return _parse_ret_1;
                 case EVAL_CODE_ERROR_PARSE_INT:
-                    error_parse_int(cmdp, eval_arg);
+                    __ERROR_HANDLER(CMDP_ERROR_PARSE_INT, 0, eval_arg);
                     return _parse_ret_1;
                 case EVAL_CODE_ERROR_PARSE_FLOAT:
-                    error_parse_float(cmdp, eval_arg);
+                    __ERROR_HANDLER(CMDP_ERROR_PARSE_DOUBLE, 0, eval_arg);
                     return _parse_ret_1;
                 case EVAL_CODE_ERROR_REPEAT_OPTION:
-                    error_repeat_option(cmdp, 0, long_option_real);
+                    __ERROR_HANDLER(CMDP_ERROR_REPEAT_OPTION, 0, long_option_real);
                     return _parse_ret_1;
                 case EVAL_CODE_DONE:
                     break;
@@ -635,7 +621,7 @@ static int cmdp_parse_args(int argc, char **argv, cmdp_command_st *cmdp, int rec
 #if CMDP_PARSE_UNKNOWN_COMMAND_AS_ARG
             return arg_index;
 #else
-            error_unknown_command(cmdp, argv[arg_index]);
+            __ERROR_HANDLER(CMDP_ERROR_UNKNOWN_COMMAND, 0, argv[arg_index]);
             return _parse_ret_1;
 #endif
         }
