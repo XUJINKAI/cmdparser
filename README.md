@@ -10,21 +10,27 @@ Command parser library (C/C++), with highly customizable.
 
 - Friendly API, configuration in ONE struct
 
+- Follow GNU/POSIX option conversion, short/long option supported
+
 - Nested sub-commands support
 
-- Short option (`-a`) and long options (`--all`)
+- Global option supported
 
-- Short option `-a -b -n XJK` can be shorten to `-abn XJK` (`-nab XJK` as well)
+- Parse strict: repeat option detect
 
-- Long option `--name=XJK` can be write as `--name XJK`
+- Highly customizable: Hide/Disable options or sub-commands, Language (error message), help option, doc generator, output stream, etc.
 
-- End of options `--` supported
+Demo:
 
-- Global options. e.g. `git status --git-dir=.git` will work as expect. (if use this library)
+Short option: `-a -b -n XJK` can be shorten to `-abn XJK` (`-nab XJK` as well)
 
-- Hide/Disable options or sub-commands, repeat option detect
+Long option: `--name=XJK` can be write as `--name XJK`
 
-- Highly customizable: Language (error message), help option, doc generator, output stream, etc.
+End of option: `-all -- -abc`, -abc will be treat as argument
+
+Global option can behind sub-command: `git status --git-dir=.git` :)
+
+Repeat option detect: `-a -b -a` will cause error
 
 ## Examples
 
@@ -53,7 +59,7 @@ static cmdp_command_st cmdp = {
 
 int main(int argc, char **argv)
 {
-    return cmdp_run(argc - 1, argv + 1, &cmdp);
+    return cmdp_run(argc - 1, argv + 1, &cmdp, NULL);
 }
 ```
 
