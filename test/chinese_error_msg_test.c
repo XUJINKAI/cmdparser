@@ -29,13 +29,61 @@ static char *g_expect_help = "中文测试\n"
                              "  -a, --age <int>            年龄（整数）\n"
                              "  --height <number>          身高（米）\n";
 
-void cmdp_configure_chinese();
+
+static void __err_parse_handler(cmdp_error_params_st *params)
+{
+    switch (params->type)
+    {
+        case CMDP_ERROR_UNKNOWN_COMMAND:
+            fprintf(params->err_stream, "未知命令: %s.\n", params->s);
+            break;
+        case CMDP_ERROR_UNKNOWN_OPTION:
+            if (params->c)
+            {
+                fprintf(params->err_stream, "未知选项: -%c.\n", params->c);
+            }
+            if (params->s)
+            {
+                fprintf(params->err_stream, "未知选项: --%s.\n", params->s);
+            }
+            break;
+        case CMDP_ERROR_MISSING_OPTION_ARG:
+            if (params->c)
+            {
+                fprintf(params->err_stream, "选项-%c需要参数.\n", params->c);
+            }
+            if (params->s)
+            {
+                fprintf(params->err_stream, "选项--%s需要参数.\n", params->s);
+            }
+            break;
+        case CMDP_ERROR_PARSE_INT:
+            fprintf(params->err_stream, "解析整数失败: %s.\n", params->s);
+            break;
+        case CMDP_ERROR_PARSE_DOUBLE:
+            fprintf(params->err_stream, "解析数字失败: %s.\n", params->s);
+            break;
+        case CMDP_ERROR_REPEAT_OPTION:
+            if (params->c)
+            {
+                fprintf(params->err_stream, "重复选项: -%c.\n", params->c);
+            }
+            if (params->s)
+            {
+                fprintf(params->err_stream, "重复选项: --%s.\n", params->s);
+            }
+            break;
+        default:
+            break;
+    }
+}
+
+
 #define __START()                                                                                                      \
-    cmdp_configure_chinese();                                                                                          \
-    START_CMD();
-#define __END()                                                                                                        \
-    END_CMD();                                                                                                         \
-    cmdp_reset_global_config();
+    START_CMD();                                                                                                       \
+    _ctx.fn_error_parse = __err_parse_handler;
+#define __END() END_CMD();
+
 
 UTEST(chinese, doc)
 {

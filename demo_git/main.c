@@ -42,7 +42,7 @@ static cmdp_command_st cmdp_top = {
 
 int main(int argc, char **argv)
 {
-    return cmdp_run(argc - 1, argv + 1, &cmdp_top);
+    return cmdp_run(argc - 1, argv + 1, &cmdp_top, NULL);
 }
 
 static cmdp_action_t cb_top_level(cmdp_process_param_st *params)

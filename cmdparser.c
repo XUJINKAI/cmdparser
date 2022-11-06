@@ -56,32 +56,12 @@ static int nonzero_countof(void *array, int element_size)
 // default methods
 // ============================================================================
 
-static cmdp_global_config_st g_config = {
-    .help_short_option = 'h',
-    .help_long_option  = (char *)"help",
-};
-
-static void reset_global_config(void)
-{
-    memset(&g_config, 0, sizeof(g_config));
-    g_config.help_short_option = 'h';
-    g_config.help_long_option  = (char *)"help";
-}
-
-#define OUT_STREAM (g_config.out_stream != NULL ? g_config.out_stream : stdout)
-#define ERR_STREAM (g_config.err_stream != NULL ? g_config.err_stream : stderr)
-
 #define HELP_PREFIX_LEN 29
 #define IS_INPUTABLE_KEY(CH)                                                                                           \
     ((((CH) >= 'a') && ((CH) <= 'z')) || (((CH) >= 'A') && ((CH) <= 'Z')) || (((CH) >= '0') && ((CH) <= '9')))
 
-static void error_parse_handler(cmdp_error_params_st *params)
+static void default_error_parse_handler(cmdp_error_params_st *params)
 {
-    if (g_config.fn_error_parse)
-    {
-        g_config.fn_error_parse(params);
-        return;
-    }
     switch (params->type)
     {
         case CMDP_ERROR_UNKNOWN_COMMAND:
@@ -128,13 +108,8 @@ static void error_parse_handler(cmdp_error_params_st *params)
     }
 }
 
-static void doc_gen_options(FILE *fp, cmdp_option_st *options)
+static void default_doc_gen_options_handler(FILE *fp, cmdp_option_st *options)
 {
-    if (g_config.fn_doc_gen_options)
-    {
-        g_config.fn_doc_gen_options(fp, options);
-        return;
-    }
     /*
     \s\s[command]\s{29-2-len}doc\n
         -h, --help                 Give this help list
@@ -228,14 +203,8 @@ static void doc_gen_options(FILE *fp, cmdp_option_st *options)
     }
 }
 
-static void doc_gen_command(FILE *fp, cmdp_command_st *command)
+static void default_doc_gen_command_handler(FILE *fp, cmdp_command_st *command)
 {
-    if (g_config.fn_doc_gen_command)
-    {
-        g_config.fn_doc_gen_command(fp, command);
-        return;
-    }
-
     if (command->doc)
     {
         fputs(command->doc, fp);
@@ -472,10 +441,10 @@ static EVAL_CODE eval_option_output(cmdp_option_st *option, char *arg)
 
 #define _parse_ret_0 (-1)
 #define _parse_ret_1 (-2)
-static int cmdp_parse_args(int argc, char **argv, cmdp_command_st *cmdp, int recursive)
+static int cmdp_parse_args(int argc, char **argv, cmdp_command_st *cmdp, cmdp_ctx *ctx, int recursive)
 {
     cmdp_error_params_st error_params = {
-        .err_stream = ERR_STREAM,
+        .err_stream = ctx->err_stream,
         .cmdp       = cmdp,
     };
 #define __ERROR_HANDLER(_type, _c, _s)                                                                                 \
@@ -484,7 +453,7 @@ static int cmdp_parse_args(int argc, char **argv, cmdp_command_st *cmdp, int rec
         error_params.type = _type;                                                                                     \
         error_params.c    = _c;                                                                                        \
         error_params.s    = _s;                                                                                        \
-        error_parse_handler(&error_params);                                                                            \
+        ctx->fn_error_parse(&error_params);                                                                            \
     } while (0)
     int parsed_options = 0;
     int arg_index      = 0;
@@ -503,9 +472,9 @@ static int cmdp_parse_args(int argc, char **argv, cmdp_command_st *cmdp, int rec
             {
                 // e.g. -anop <NAME>. loop char by char
                 cur_ch = cur_arg[ch_idx];
-                if (g_config.help_short_option != '\0' && cur_ch == g_config.help_short_option)
+                if (ctx->help_short_option != '\0' && cur_ch == ctx->help_short_option)
                 {
-                    cmdp_help(cmdp);
+                    ctx->fn_doc_gen_command(ctx->out_stream, cmdp);
                     return _parse_ret_0;
                 }
 
@@ -559,9 +528,9 @@ static int cmdp_parse_args(int argc, char **argv, cmdp_command_st *cmdp, int rec
             char long_option_real[128] = {0};
             strncpy(long_option_real, long_option_start, long_len_calc);
 
-            if (g_config.help_long_option != NULL && strcmp(g_config.help_long_option, long_option_start) == 0)
+            if (ctx->help_long_option != NULL && strcmp(ctx->help_long_option, long_option_start) == 0)
             {
-                cmdp_help(cmdp);
+                ctx->fn_doc_gen_command(ctx->out_stream, cmdp);
                 return _parse_ret_0;
             }
 
@@ -626,7 +595,7 @@ static int cmdp_parse_args(int argc, char **argv, cmdp_command_st *cmdp, int rec
 #endif
         }
         find->__flag    = __CMDP_CMD_IS_PARSED;
-        int next_parsed = cmdp_parse_args(argc - arg_index - 1, argv + arg_index + 1, find, recursive + 1);
+        int next_parsed = cmdp_parse_args(argc - arg_index - 1, argv + arg_index + 1, find, ctx, recursive + 1);
         if (next_parsed < 0)
         {
             return next_parsed;
@@ -671,13 +640,13 @@ static cmdp_command_st *cmdp_find_parsed_cmd(cmdp_command_st *cmdp)
     }
     return NULL;
 }
-static int cmdp_run_callback(int argc, char **argv, cmdp_command_st *cmdp, int recursive)
+static int cmdp_run_callback(int argc, char **argv, cmdp_command_st *cmdp, cmdp_ctx *ctx, int recursive)
 {
     cmdp_command_st *sub_cmd = cmdp_find_parsed_cmd(cmdp);
     int parsed_options       = cmdp_count_parsed_options(cmdp);
     if (cmdp->fn_process == NULL && sub_cmd == NULL && parsed_options == 0 && argc == 0)
     {
-        cmdp_help(cmdp);
+        ctx->fn_doc_gen_command(ctx->out_stream, cmdp);
         return 0;
     }
 
@@ -690,8 +659,8 @@ static int cmdp_run_callback(int argc, char **argv, cmdp_command_st *cmdp, int r
             .next       = sub_cmd,
             .opts       = parsed_options,
             .sub_level  = recursive,
-            .out_stream = OUT_STREAM,
-            .err_stream = ERR_STREAM,
+            .out_stream = ctx->out_stream,
+            .err_stream = ctx->err_stream,
             .error_code = 1,
         };
         cmdp_action_t code = cmdp->fn_process(&fn_process_param);
@@ -701,14 +670,14 @@ static int cmdp_run_callback(int argc, char **argv, cmdp_command_st *cmdp, int r
             case CMDP_ACT_OK:
                 if (show_help)
                 {
-                    cmdp_fprint_command_doc(OUT_STREAM, cmdp);
+                    ctx->fn_doc_gen_command(ctx->out_stream, cmdp);
                 }
                 return 0;
 
             case CMDP_ACT_ERROR:
                 if (show_help)
                 {
-                    cmdp_fprint_command_doc(ERR_STREAM, cmdp);
+                    ctx->fn_doc_gen_command(ctx->err_stream, cmdp);
                 }
                 return fn_process_param.error_code;
 
@@ -716,14 +685,14 @@ static int cmdp_run_callback(int argc, char **argv, cmdp_command_st *cmdp, int r
             default:
                 if (show_help)
                 {
-                    cmdp_fprint_command_doc(OUT_STREAM, cmdp);
+                    ctx->fn_doc_gen_command(ctx->out_stream, cmdp);
                 }
         }
     }
 
     if (sub_cmd != NULL)
     {
-        return cmdp_run_callback(argc, argv, sub_cmd, recursive + 1);
+        return cmdp_run_callback(argc, argv, sub_cmd, ctx, recursive + 1);
     }
     return 0;
 }
@@ -785,29 +754,20 @@ cmdp_flag_t cmdp_flag_always_hide()
     return CMDP_FLAG_HIDE;
 }
 
-void cmdp_fprint_options_doc(FILE *fp, cmdp_option_st *options)
+int cmdp_run(int argc, char **argv, cmdp_command_st *root_command, cmdp_ctx *ctx)
 {
-    doc_gen_options(fp, options);
-}
-void cmdp_fprint_command_doc(FILE *fp, cmdp_command_st *command)
-{
-    doc_gen_command(fp, command);
-}
-void cmdp_fprint_all_documents(FILE *fp, cmdp_command_st *command)
-{
-    char *cmd_name = command->name ? command->name : (char *)"";
-    bool fp_istty  = isatty(fileno(fp));
-    cmdp_fprint_all_documents_recursive(fp, command, cmd_name, fp_istty);
-}
-
-void cmdp_help(cmdp_command_st *command)
-{
-    cmdp_fprint_command_doc(OUT_STREAM, command);
-}
-int cmdp_run(int argc, char **argv, cmdp_command_st *root_command)
-{
+    if (ctx)
+    {
+        cmdp_complete_context(ctx);
+    }
+    else
+    {
+        cmdp_ctx default_ctx = {0};
+        cmdp_set_default_context(&default_ctx);
+        ctx = &default_ctx;
+    }
     cmdp_setup(root_command, NULL);
-    int parsed = cmdp_parse_args(argc, argv, root_command, 0);
+    int parsed = cmdp_parse_args(argc, argv, root_command, ctx, 0);
     if (parsed < 0)
     {
         /* 
@@ -816,15 +776,68 @@ int cmdp_run(int argc, char **argv, cmdp_command_st *root_command)
          */
         return -parsed - 1;
     }
-    return cmdp_run_callback(argc - parsed, argv + parsed, root_command, 0);
+    return cmdp_run_callback(argc - parsed, argv + parsed, root_command, ctx, 0);
 }
 
-cmdp_global_config_st *cmdp_get_global_config(void)
+
+void cmdp_fprint_options_doc(FILE *fp, cmdp_option_st *options)
 {
-    return &g_config;
+    default_doc_gen_options_handler(fp, options);
+}
+void cmdp_fprint_command_doc(FILE *fp, cmdp_command_st *command)
+{
+    default_doc_gen_command_handler(fp, command);
+}
+void cmdp_fprint_all_documents(FILE *fp, cmdp_command_st *command)
+{
+    char *cmd_name = command->name ? command->name : (char *)"";
+    bool fp_istty  = isatty(fileno(fp));
+    cmdp_fprint_all_documents_recursive(fp, command, cmd_name, fp_istty);
+}
+void cmdp_help(cmdp_command_st *command)
+{
+    cmdp_fprint_command_doc(stdout, command);
 }
 
-void cmdp_reset_global_config(void)
+void cmdp_set_default_context(cmdp_ctx *ctx)
 {
-    reset_global_config();
+    if (ctx == NULL)
+    {
+        return;
+    }
+    ctx->help_short_option  = 'h';
+    ctx->help_long_option   = (char *)"help";
+    ctx->fn_doc_gen_command = default_doc_gen_command_handler;
+    ctx->fn_doc_gen_options = default_doc_gen_options_handler;
+    ctx->fn_error_parse     = default_error_parse_handler;
+    ctx->out_stream         = stdout;
+    ctx->err_stream         = stderr;
+}
+
+void cmdp_complete_context(cmdp_ctx *ctx)
+{
+    if (ctx == NULL)
+    {
+        return;
+    }
+    if (ctx->fn_doc_gen_command == NULL)
+    {
+        ctx->fn_doc_gen_command = default_doc_gen_command_handler;
+    }
+    if (ctx->fn_doc_gen_options == NULL)
+    {
+        ctx->fn_doc_gen_options = default_doc_gen_options_handler;
+    }
+    if (ctx->fn_error_parse == NULL)
+    {
+        ctx->fn_error_parse = default_error_parse_handler;
+    }
+    if (ctx->out_stream == NULL)
+    {
+        ctx->out_stream = stdout;
+    }
+    if (ctx->err_stream == NULL)
+    {
+        ctx->err_stream = stderr;
+    }
 }

@@ -30,7 +30,7 @@ static cmdp_command_st g_command = {
 
 int main(int argc, char **argv)
 {
-    return cmdp_run(argc - 1, argv + 1, &g_command);
+    return cmdp_run(argc - 1, argv + 1, &g_command, NULL);
 }
 
 

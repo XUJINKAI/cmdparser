@@ -49,6 +49,7 @@ typedef enum cmdp_type_t
 
 typedef struct cmdp_option_st cmdp_option_st;
 typedef struct cmdp_command_st cmdp_command_st;
+typedef struct cmdp_context_st cmdp_ctx;
 
 typedef struct cmdp_process_param_st
 {
@@ -124,23 +125,16 @@ struct cmdp_option_st
 #define CMDP_HIDE .fn_flag = cmdp_flag_always_hide
 CMDP_EXTERN cmdp_flag_t cmdp_flag_always_hide();
 
-CMDP_EXTERN void cmdp_fprint_options_doc(FILE *fp, cmdp_option_st *options);
-CMDP_EXTERN void cmdp_fprint_command_doc(FILE *fp, cmdp_command_st *command);
-// TODO generate markdown doc
-CMDP_EXTERN void cmdp_fprint_all_documents(FILE *fp, cmdp_command_st *command);
-
-// print help message to output stream
-CMDP_EXTERN void cmdp_help(cmdp_command_st *command);
-
 /* 
 run arguments with a cmdp_command_st
+ctx can be NULL
 
 first argument is not program name, e.g.
 int main(int argc, char**argv) {
-    return cmdp_run(argc - 1, argv + 1, &root_command);
+    return cmdp_run(argc - 1, argv + 1, &root_command, NULL);
 }
  */
-CMDP_EXTERN int cmdp_run(int argc, char **argv, cmdp_command_st *root_command);
+CMDP_EXTERN int cmdp_run(int argc, char **argv, cmdp_command_st *root_command, cmdp_ctx *ctx);
 
 
 #define CMDP_DOC(document)                                                                                             \
@@ -155,7 +149,19 @@ CMDP_EXTERN int cmdp_run(int argc, char **argv, cmdp_command_st *root_command);
     }
 
 // ===================
-// global config
+// default methods
+// ===================
+
+CMDP_EXTERN void cmdp_fprint_options_doc(FILE *fp, cmdp_option_st *options);
+CMDP_EXTERN void cmdp_fprint_command_doc(FILE *fp, cmdp_command_st *command);
+// TODO generate markdown doc
+CMDP_EXTERN void cmdp_fprint_all_documents(FILE *fp, cmdp_command_st *command);
+
+// print help message to stdout
+CMDP_EXTERN void cmdp_help(cmdp_command_st *command);
+
+// ===================
+// context
 // ===================
 
 typedef enum
@@ -178,21 +184,21 @@ typedef struct
     char c;
 } cmdp_error_params_st;
 
-typedef struct cmdp_global_config_st
+struct cmdp_context_st
 {
     char help_short_option;
     char *help_long_option;
 
     void (*fn_doc_gen_options)(FILE *fp, cmdp_option_st *options);
     void (*fn_doc_gen_command)(FILE *fp, cmdp_command_st *command);
-
     void (*fn_error_parse)(cmdp_error_params_st *params);
 
     FILE *out_stream;
     FILE *err_stream;
-} cmdp_global_config_st;
+};
 
-CMDP_EXTERN cmdp_global_config_st *cmdp_get_global_config(void);
-CMDP_EXTERN void cmdp_reset_global_config(void);
+CMDP_EXTERN void cmdp_set_default_context(cmdp_ctx *ctx);
+// fill ctx with default values
+CMDP_EXTERN void cmdp_complete_context(cmdp_ctx *ctx);
 
 #endif /* __CMD_PARSER_H__ */

@@ -77,7 +77,7 @@ static cmdp_command_st cmdp = {
 
 ### Custom Error Message
 
-See [test/cmdp_configure_chinese.c](test/cmdp_configure_chinese.c)
+See [test/chinese_error_msg_test.c](test/chinese_error_msg_test.c)
 
 You can custom your own error message.
 

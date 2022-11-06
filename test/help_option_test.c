@@ -25,11 +25,9 @@ static const char *g_main_help = "doc\n"
 
 #define __START(h_short, h_long)                                                                                       \
     START_CMD();                                                                                                       \
-    _cfg->help_short_option = h_short;                                                                                 \
-    _cfg->help_long_option  = h_long;
-#define __END()                                                                                                        \
-    END_CMD();                                                                                                         \
-    cmdp_reset_global_config();
+    _ctx.help_short_option = h_short;                                                                                  \
+    _ctx.help_long_option  = h_long;
+#define __END() END_CMD();
 
 
 UTEST(help_option, NULL__h)
